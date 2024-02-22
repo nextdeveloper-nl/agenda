@@ -55,5 +55,60 @@ Route::prefix('agenda')->group(function () {
         }
     );
 
+    Route::prefix('contacts')->group(
+        function () {
+            Route::get('/', 'Contacts\ContactsController@index');
+
+            Route::get('{agenda_contacts}/tags ', 'Contacts\ContactsController@tags');
+            Route::post('{agenda_contacts}/tags ', 'Contacts\ContactsController@saveTags');
+            Route::get('{agenda_contacts}/addresses ', 'Contacts\ContactsController@addresses');
+            Route::post('{agenda_contacts}/addresses ', 'Contacts\ContactsController@saveAddresses');
+
+            Route::get('/{agenda_contacts}/{subObjects}', 'Contacts\ContactsController@relatedObjects');
+            Route::get('/{agenda_contacts}', 'Contacts\ContactsController@show');
+
+            Route::post('/', 'Contacts\ContactsController@store');
+            Route::patch('/{agenda_contacts}', 'Contacts\ContactsController@update');
+            Route::delete('/{agenda_contacts}', 'Contacts\ContactsController@destroy');
+        }
+    );
+
+    Route::prefix('address-books')->group(
+        function () {
+            Route::get('/', 'AddressBooks\AddressBooksController@index');
+
+            Route::get('{agenda_address_books}/tags ', 'AddressBooks\AddressBooksController@tags');
+            Route::post('{agenda_address_books}/tags ', 'AddressBooks\AddressBooksController@saveTags');
+            Route::get('{agenda_address_books}/addresses ', 'AddressBooks\AddressBooksController@addresses');
+            Route::post('{agenda_address_books}/addresses ', 'AddressBooks\AddressBooksController@saveAddresses');
+
+            Route::get('/{agenda_address_books}/{subObjects}', 'AddressBooks\AddressBooksController@relatedObjects');
+            Route::get('/{agenda_address_books}', 'AddressBooks\AddressBooksController@show');
+
+            Route::post('/', 'AddressBooks\AddressBooksController@store');
+            Route::patch('/{agenda_address_books}', 'AddressBooks\AddressBooksController@update');
+            Route::delete('/{agenda_address_books}', 'AddressBooks\AddressBooksController@destroy');
+        }
+    );
+
+    Route::prefix('all-contacts')->group(
+        function () {
+            Route::get('/', 'AllContacts\AllContactsController@index');
+
+            Route::get('{agenda_all_contacts}/tags ', 'AllContacts\AllContactsController@tags');
+            Route::post('{agenda_all_contacts}/tags ', 'AllContacts\AllContactsController@saveTags');
+            Route::get('{agenda_all_contacts}/addresses ', 'AllContacts\AllContactsController@addresses');
+            Route::post('{agenda_all_contacts}/addresses ', 'AllContacts\AllContactsController@saveAddresses');
+
+            Route::get('/{agenda_all_contacts}/{subObjects}', 'AllContacts\AllContactsController@relatedObjects');
+            Route::get('/{agenda_all_contacts}', 'AllContacts\AllContactsController@show');
+
+            Route::post('/', 'AllContacts\AllContactsController@store');
+            Route::patch('/{agenda_all_contacts}', 'AllContacts\AllContactsController@update');
+            Route::delete('/{agenda_all_contacts}', 'AllContacts\AllContactsController@destroy');
+        }
+    );
+
 // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
 });

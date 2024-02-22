@@ -1,10 +1,10 @@
 <?php
 
-namespace NextDeveloper\Agenda\Http\Requests\Calendars;
+namespace NextDeveloper\Agenda\Http\Requests\AddressBooks;
 
 use NextDeveloper\Commons\Http\Requests\AbstractFormRequest;
 
-class CalendarsCreateRequest extends AbstractFormRequest
+class AddressBooksCreateRequest extends AbstractFormRequest
 {
 
     /**
@@ -15,12 +15,6 @@ class CalendarsCreateRequest extends AbstractFormRequest
         return [
             'name' => 'required|string',
         'description' => 'nullable|string',
-        'object_id' => 'required',
-        'object_type' => 'required|string',
-        'timezone' => 'required|string',
-        'is_public' => 'boolean',
-        'tags' => '',
-        'color' => 'nullable|string',
         ];
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE

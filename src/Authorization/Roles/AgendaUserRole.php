@@ -11,13 +11,13 @@ use NextDeveloper\IAM\Authorization\Roles\IAuthorizationRole;
 use NextDeveloper\IAM\Database\Models\Users;
 use NextDeveloper\IAM\Helpers\UserHelper;
 
-class AgendaAdminRole extends AbstractRole implements IAuthorizationRole
+class AgendaUserRole extends AbstractRole implements IAuthorizationRole
 {
-    public const NAME = 'agenda-admin';
+    public const NAME = 'agenda-user';
 
     public const LEVEL = 50;
 
-    public const DESCRIPTION = 'Agenda Admin';
+    public const DESCRIPTION = 'Agenda User';
 
     public const DB_PREFIX = 'agenda';
 
@@ -33,6 +33,11 @@ class AgendaAdminRole extends AbstractRole implements IAuthorizationRole
         /**
          * Here user will be able to list all models, because by default, sales manager can see everybody.
          */
+        $me = UserHelper::me();
+        $currentAccount = UserHelper::currentAccount();
+
+        $model->where('iam_user_id', $me->id);
+        $model->where('iam_account_id', $currentAccount->id);
     }
 
     public function checkPrivileges(Users $users = null)
