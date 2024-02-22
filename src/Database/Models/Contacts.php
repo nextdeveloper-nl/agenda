@@ -6,32 +6,33 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use NextDeveloper\Commons\Database\Traits\Filterable;
-use NextDeveloper\Agenda\Database\Observers\CalendarsObserver;
+use NextDeveloper\Agenda\Database\Observers\ContactsObserver;
 use NextDeveloper\Commons\Database\Traits\UuidId;
 use NextDeveloper\Commons\Common\Cache\Traits\CleanCache;
 use NextDeveloper\Commons\Database\Traits\Taggable;
 
 /**
- * Calendars model.
+ * Contacts model.
  *
  * @package  NextDeveloper\Agenda\Database\Models
  * @property integer $id
  * @property string $uuid
  * @property string $name
+ * @property string $surname
+ * @property string $email
+ * @property string $home_phone
+ * @property string $cell_phone
+ * @property string $fax_number
+ * @property string $email_work
+ * @property string $website
+ * @property string $notes
  * @property string $description
- * @property integer $iam_account_id
- * @property integer $iam_user_id
- * @property integer $object_id
- * @property string $object_type
- * @property string $timezone
- * @property boolean $is_public
- * @property array $tags
- * @property string $color
+ * @property integer $agenda_address_book_id
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon $deleted_at
  */
-class Calendars extends Model
+class Contacts extends Model
 {
     use Filterable, UuidId, CleanCache, Taggable;
     use SoftDeletes;
@@ -39,7 +40,7 @@ class Calendars extends Model
 
     public $timestamps = true;
 
-    protected $table = 'agenda_calendars';
+    protected $table = 'agenda_contacts';
 
 
     /**
@@ -49,15 +50,16 @@ class Calendars extends Model
 
     protected $fillable = [
             'name',
+            'surname',
+            'email',
+            'home_phone',
+            'cell_phone',
+            'fax_number',
+            'email_work',
+            'website',
+            'notes',
             'description',
-            'iam_account_id',
-            'iam_user_id',
-            'object_id',
-            'object_type',
-            'timezone',
-            'is_public',
-            'tags',
-            'color',
+            'agenda_address_book_id',
     ];
 
     /**
@@ -82,13 +84,16 @@ class Calendars extends Model
     protected $casts = [
     'id' => 'integer',
     'name' => 'string',
+    'surname' => 'string',
+    'email' => 'string',
+    'home_phone' => 'string',
+    'cell_phone' => 'string',
+    'fax_number' => 'string',
+    'email_work' => 'string',
+    'website' => 'string',
+    'notes' => 'string',
     'description' => 'string',
-    'object_id' => 'integer',
-    'object_type' => 'string',
-    'timezone' => 'string',
-    'is_public' => 'boolean',
-    'tags' => \NextDeveloper\Commons\Database\Casts\TextArray::class,
-    'color' => 'string',
+    'agenda_address_book_id' => 'integer',
     'created_at' => 'datetime',
     'updated_at' => 'datetime',
     'deleted_at' => 'datetime',
@@ -125,7 +130,7 @@ class Calendars extends Model
         parent::boot();
 
         //  We create and add Observer even if we wont use it.
-        parent::observe(CalendarsObserver::class);
+        parent::observe(ContactsObserver::class);
 
         self::registerScopes();
     }
@@ -133,7 +138,7 @@ class Calendars extends Model
     public static function registerScopes()
     {
         $globalScopes = config('agenda.scopes.global');
-        $modelScopes = config('agenda.scopes.agenda_calendars');
+        $modelScopes = config('agenda.scopes.agenda_contacts');
 
         if(!$modelScopes) { $modelScopes = [];
         }
@@ -153,5 +158,4 @@ class Calendars extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
 }
