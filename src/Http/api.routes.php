@@ -91,6 +91,24 @@ Route::prefix('agenda')->group(function () {
         }
     );
 
+    Route::prefix('all-contacts')->group(
+        function () {
+            Route::get('/', 'AllContacts\AllContactsController@index');
+
+            Route::get('{agenda_all_contacts}/tags ', 'AllContacts\AllContactsController@tags');
+            Route::post('{agenda_all_contacts}/tags ', 'AllContacts\AllContactsController@saveTags');
+            Route::get('{agenda_all_contacts}/addresses ', 'AllContacts\AllContactsController@addresses');
+            Route::post('{agenda_all_contacts}/addresses ', 'AllContacts\AllContactsController@saveAddresses');
+
+            Route::get('/{agenda_all_contacts}/{subObjects}', 'AllContacts\AllContactsController@relatedObjects');
+            Route::get('/{agenda_all_contacts}', 'AllContacts\AllContactsController@show');
+
+            Route::post('/', 'AllContacts\AllContactsController@store');
+            Route::patch('/{agenda_all_contacts}', 'AllContacts\AllContactsController@update');
+            Route::delete('/{agenda_all_contacts}', 'AllContacts\AllContactsController@destroy');
+        }
+    );
+
 // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
 
 });

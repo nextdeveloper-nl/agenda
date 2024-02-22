@@ -2,38 +2,30 @@
 
 namespace NextDeveloper\Agenda\Database\Models;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use NextDeveloper\Commons\Database\Traits\Filterable;
-use NextDeveloper\Agenda\Database\Observers\AddressBooksObserver;
+use NextDeveloper\Agenda\Database\Observers\AllContactsObserver;
 use NextDeveloper\Commons\Database\Traits\UuidId;
 use NextDeveloper\Commons\Common\Cache\Traits\CleanCache;
 use NextDeveloper\Commons\Database\Traits\Taggable;
 
 /**
- * AddressBooks model.
+ * AllContacts model.
  *
  * @package  NextDeveloper\Agenda\Database\Models
- * @property integer $id
- * @property string $uuid
- * @property string $name
- * @property string $description
+ * @property string $fullname
+ * @property string $email
  * @property integer $iam_user_id
- * @property integer $iam_account_id
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon $deleted_at
  */
-class AddressBooks extends Model
+class AllContacts extends Model
 {
     use Filterable, UuidId, CleanCache, Taggable;
-    use SoftDeletes;
 
 
-    public $timestamps = true;
+    public $timestamps = false;
 
-    protected $table = 'agenda_address_books';
+    protected $table = 'agenda_all_contacts';
 
 
     /**
@@ -42,10 +34,9 @@ class AddressBooks extends Model
     protected $guarded = [];
 
     protected $fillable = [
-            'name',
-            'description',
+            'fullname',
+            'email',
             'iam_user_id',
-            'iam_account_id',
     ];
 
     /**
@@ -68,12 +59,8 @@ class AddressBooks extends Model
      @var array
      */
     protected $casts = [
-    'id' => 'integer',
-    'name' => 'string',
-    'description' => 'string',
-    'created_at' => 'datetime',
-    'updated_at' => 'datetime',
-    'deleted_at' => 'datetime',
+    'fullname' => 'string',
+    'email' => 'string',
     ];
 
     /**
@@ -82,9 +69,7 @@ class AddressBooks extends Model
      @var array
      */
     protected $dates = [
-    'created_at',
-    'updated_at',
-    'deleted_at',
+
     ];
 
     /**
@@ -107,7 +92,7 @@ class AddressBooks extends Model
         parent::boot();
 
         //  We create and add Observer even if we wont use it.
-        parent::observe(AddressBooksObserver::class);
+        parent::observe(AllContactsObserver::class);
 
         self::registerScopes();
     }
@@ -115,7 +100,7 @@ class AddressBooks extends Model
     public static function registerScopes()
     {
         $globalScopes = config('agenda.scopes.global');
-        $modelScopes = config('agenda.scopes.agenda_address_books');
+        $modelScopes = config('agenda.scopes.agenda_all_contacts');
 
         if(!$modelScopes) { $modelScopes = [];
         }
@@ -135,5 +120,4 @@ class AddressBooks extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
 }
