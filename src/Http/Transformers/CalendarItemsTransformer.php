@@ -36,13 +36,15 @@ class CalendarItemsTransformer extends AbstractCalendarItemsTransformer
         $transformed = parent::transform($model);
 
         if(array_key_exists('guests', $transformed)) {
-            $guests = [];
+            if($transformed['guests'] != null) {
+                $guests = [];
 
-            foreach ($transformed['guests'] as $guest) {
-                $guests[] = Users::where('id', $guest)->first()->uuid;
+                foreach ($transformed['guests'] as $guest) {
+                    $guests[] = Users::where('id', $guest)->first()->uuid;
+                }
+
+                $transformed['guests'] = $guests;
             }
-
-            $transformed['guests'] = $guests;
         }
 
         Cache::set(
