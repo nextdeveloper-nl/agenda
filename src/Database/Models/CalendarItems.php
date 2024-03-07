@@ -3,13 +3,13 @@
 namespace NextDeveloper\Agenda\Database\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use NextDeveloper\Commons\Database\Traits\Filterable;
 use NextDeveloper\Agenda\Database\Observers\CalendarItemsObserver;
 use NextDeveloper\Commons\Database\Traits\UuidId;
 use NextDeveloper\Commons\Common\Cache\Traits\CleanCache;
 use NextDeveloper\Commons\Database\Traits\Taggable;
+use Tpetry\PostgresqlEnhanced\Eloquent\Casts\IntegerArrayCast;
 
 /**
  * CalendarItems model.
@@ -88,7 +88,7 @@ class CalendarItems extends Model
     'title' => 'string',
     'description' => 'string',
     'location' => 'string',
-    'guests' => 'array:integer',
+    'guests' => \Tpetry\PostgresqlEnhanced\Eloquent\Casts\IntegerArrayCast::class,
     'starts_at' => 'datetime',
     'ends_at' => 'datetime',
     'agenda_calendar_id' => 'integer',
