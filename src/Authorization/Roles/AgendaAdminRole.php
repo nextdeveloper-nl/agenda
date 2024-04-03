@@ -15,7 +15,7 @@ class AgendaAdminRole extends AbstractRole implements IAuthorizationRole
 {
     public const NAME = 'agenda-admin';
 
-    public const LEVEL = 50;
+    public const LEVEL = 100;
 
     public const DESCRIPTION = 'Agenda Admin';
 
