@@ -33,11 +33,10 @@ class AgendaUserRole extends AbstractRole implements IAuthorizationRole
         /**
          * Here user will be able to list all models, because by default, sales manager can see everybody.
          */
-        $me = UserHelper::me();
-        $currentAccount = UserHelper::currentAccount();
-
-        $model->where('iam_user_id', $me->id);
-        $model->where('iam_account_id', $currentAccount->id);
+        $builder->where([
+            'iam_account_id'    =>  UserHelper::currentAccount()->id,
+            'iam_user_id'       =>  UserHelper::me()->id
+        ]);
     }
 
     public function checkPrivileges(Users $users = null)
@@ -107,5 +106,10 @@ class AgendaUserRole extends AbstractRole implements IAuthorizationRole
     public function getDbPrefix()
     {
         return self::DB_PREFIX;
+    }
+
+    public function checkRules(Users $users): bool
+    {
+        // TODO: Implement checkRules() method.
     }
 }
