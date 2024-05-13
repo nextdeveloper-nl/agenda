@@ -14,8 +14,9 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  * AllContacts model.
  *
  * @package  NextDeveloper\Agenda\Database\Models
- * @property string $fullname
- * @property string $email
+ * @property integer $id
+ * @property string $uuid
+ * @property string $search_string
  * @property integer $iam_user_id
  */
 class AllContacts extends Model
@@ -34,8 +35,7 @@ class AllContacts extends Model
     protected $guarded = [];
 
     protected $fillable = [
-            'fullname',
-            'email',
+            'search_string',
             'iam_user_id',
     ];
 
@@ -59,8 +59,8 @@ class AllContacts extends Model
      @var array
      */
     protected $casts = [
-    'fullname' => 'string',
-    'email' => 'string',
+    'id' => 'integer',
+    'search_string' => 'string',
     ];
 
     /**
@@ -120,4 +120,5 @@ class AllContacts extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
 }

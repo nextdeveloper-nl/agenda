@@ -4,7 +4,7 @@ namespace NextDeveloper\Agenda\Database\Filters;
 
 use Illuminate\Database\Eloquent\Builder;
 use NextDeveloper\Commons\Database\Filters\AbstractQueryFilter;
-    
+            
 
 /**
  * This class automatically puts where clause on database so that use can filter
@@ -12,6 +12,7 @@ use NextDeveloper\Commons\Database\Filters\AbstractQueryFilter;
  */
 class ContactsQueryFilter extends AbstractQueryFilter
 {
+
     /**
      * @var Builder
      */
@@ -67,32 +68,32 @@ class ContactsQueryFilter extends AbstractQueryFilter
         return $this->builder->where('description', 'like', '%' . $value . '%');
     }
 
-    public function createdAtStart($date) 
+    public function createdAtStart($date)
     {
         return $this->builder->where('created_at', '>=', $date);
     }
 
-    public function createdAtEnd($date) 
+    public function createdAtEnd($date)
     {
         return $this->builder->where('created_at', '<=', $date);
     }
 
-    public function updatedAtStart($date) 
+    public function updatedAtStart($date)
     {
         return $this->builder->where('updated_at', '>=', $date);
     }
 
-    public function updatedAtEnd($date) 
+    public function updatedAtEnd($date)
     {
         return $this->builder->where('updated_at', '<=', $date);
     }
 
-    public function deletedAtStart($date) 
+    public function deletedAtStart($date)
     {
         return $this->builder->where('deleted_at', '>=', $date);
     }
 
-    public function deletedAtEnd($date) 
+    public function deletedAtEnd($date)
     {
         return $this->builder->where('deleted_at', '<=', $date);
     }
@@ -103,6 +104,24 @@ class ContactsQueryFilter extends AbstractQueryFilter
 
         if($agendaAddressBook) {
             return $this->builder->where('agenda_address_book_id', '=', $agendaAddressBook->id);
+        }
+    }
+
+    public function iamAccountId($value)
+    {
+            $iamAccount = \NextDeveloper\IAM\Database\Models\Accounts::where('uuid', $value)->first();
+
+        if($iamAccount) {
+            return $this->builder->where('iam_account_id', '=', $iamAccount->id);
+        }
+    }
+
+    public function iamUserId($value)
+    {
+            $iamUser = \NextDeveloper\IAM\Database\Models\Users::where('uuid', $value)->first();
+
+        if($iamUser) {
+            return $this->builder->where('iam_user_id', '=', $iamUser->id);
         }
     }
 
