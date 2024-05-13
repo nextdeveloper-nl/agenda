@@ -12,19 +12,15 @@ use NextDeveloper\Commons\Database\Filters\AbstractQueryFilter;
  */
 class AllContactsQueryFilter extends AbstractQueryFilter
 {
+
     /**
      * @var Builder
      */
     protected $builder;
     
-    public function fullname($value)
+    public function searchString($value)
     {
-        return $this->builder->where('fullname', 'like', '%' . $value . '%');
-    }
-    
-    public function email($value)
-    {
-        return $this->builder->where('email', 'like', '%' . $value . '%');
+        return $this->builder->where('search_string', 'like', '%' . $value . '%');
     }
 
     public function iamUserId($value)

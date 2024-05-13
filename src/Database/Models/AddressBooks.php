@@ -24,6 +24,7 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon $deleted_at
+ * @property array $tags
  */
 class AddressBooks extends Model
 {
@@ -46,6 +47,7 @@ class AddressBooks extends Model
             'description',
             'iam_user_id',
             'iam_account_id',
+            'tags',
     ];
 
     /**
@@ -74,6 +76,7 @@ class AddressBooks extends Model
     'created_at' => 'datetime',
     'updated_at' => 'datetime',
     'deleted_at' => 'datetime',
+    'tags' => \NextDeveloper\Commons\Database\Casts\TextArray::class,
     ];
 
     /**
@@ -135,5 +138,6 @@ class AddressBooks extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
 
 }

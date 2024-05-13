@@ -13,6 +13,27 @@ use NextDeveloper\Commons\Database\Filters\AbstractQueryFilter;
 class CalendarItemsQueryFilter extends AbstractQueryFilter
 {
     /**
+     * Filter by tags
+     *
+     * @param  $values
+     * @return Builder
+     */
+    public function tags($values)
+    {
+        $tags = explode(',', $values);
+
+        $search = '';
+
+        for($i = 0; $i < count($tags); $i++) {
+            $search .= "'" . trim($tags[$i]) . "',";
+        }
+
+        $search = substr($search, 0, -1);
+
+        return $this->builder->whereRaw('tags @> ARRAY[' . $search . ']');
+    }
+
+    /**
      * @var Builder
      */
     protected $builder;
@@ -36,58 +57,58 @@ class CalendarItemsQueryFilter extends AbstractQueryFilter
     {
         return $this->builder->where('is_out_of_office', true);
     }
-    
+
     public function isAppointmentSlot()
     {
         return $this->builder->where('is_appointment_slot', true);
     }
-    
-    public function startsAtStart($date) 
+
+    public function startsAtStart($date)
     {
         return $this->builder->where('starts_at', '>=', $date);
     }
 
-    public function startsAtEnd($date) 
+    public function startsAtEnd($date)
     {
         return $this->builder->where('starts_at', '<=', $date);
     }
 
-    public function endsAtStart($date) 
+    public function endsAtStart($date)
     {
         return $this->builder->where('ends_at', '>=', $date);
     }
 
-    public function endsAtEnd($date) 
+    public function endsAtEnd($date)
     {
         return $this->builder->where('ends_at', '<=', $date);
     }
 
-    public function createdAtStart($date) 
+    public function createdAtStart($date)
     {
         return $this->builder->where('created_at', '>=', $date);
     }
 
-    public function createdAtEnd($date) 
+    public function createdAtEnd($date)
     {
         return $this->builder->where('created_at', '<=', $date);
     }
 
-    public function updatedAtStart($date) 
+    public function updatedAtStart($date)
     {
         return $this->builder->where('updated_at', '>=', $date);
     }
 
-    public function updatedAtEnd($date) 
+    public function updatedAtEnd($date)
     {
         return $this->builder->where('updated_at', '<=', $date);
     }
 
-    public function deletedAtStart($date) 
+    public function deletedAtStart($date)
     {
         return $this->builder->where('deleted_at', '>=', $date);
     }
 
-    public function deletedAtEnd($date) 
+    public function deletedAtEnd($date)
     {
         return $this->builder->where('deleted_at', '<=', $date);
     }

@@ -10,6 +10,7 @@ use NextDeveloper\Commons\Database\Traits\UuidId;
 use NextDeveloper\Commons\Common\Cache\Traits\CleanCache;
 use NextDeveloper\Commons\Database\Traits\Taggable;
 use Tpetry\PostgresqlEnhanced\Eloquent\Casts\IntegerArrayCast;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * CalendarItems model.
@@ -88,7 +89,7 @@ class CalendarItems extends Model
     'title' => 'string',
     'description' => 'string',
     'location' => 'string',
-    'guests' => \Tpetry\PostgresqlEnhanced\Eloquent\Casts\IntegerArrayCast::class,
+    'guests' => 'array:integer',
     'starts_at' => 'datetime',
     'ends_at' => 'datetime',
     'agenda_calendar_id' => 'integer',
@@ -161,6 +162,7 @@ class CalendarItems extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
 
 
 }

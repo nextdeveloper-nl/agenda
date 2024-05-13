@@ -15,6 +15,7 @@ class AddressBooksUpdateRequest extends AbstractFormRequest
         return [
             'name' => 'nullable|string',
         'description' => 'nullable|string',
+        'tags' => 'nullable',
         ];
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
