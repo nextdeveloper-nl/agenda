@@ -35,6 +35,36 @@ class ContactsController extends AbstractController
     }
 
     /**
+     * This function returns the list of actions that can be performed on this object.
+     *
+     * @return void
+     */
+    public function getActions()
+    {
+        $data = ContactsService::getActions();
+
+        return ResponsableFactory::makeResponse($this, $data);
+    }
+
+    /**
+     * Makes the related action to the object
+     *
+     * @param  $objectId
+     * @param  $action
+     * @return array
+     */
+    public function doAction($objectId, $action)
+    {
+        $actionId = ContactsService::doAction($objectId, $action);
+
+        return $this->withArray(
+            [
+            'action_id' =>  $actionId
+            ]
+        );
+    }
+
+    /**
      * This method receives ID for the related model and returns the item to the client.
      *
      * @param  $contactsId
@@ -76,6 +106,12 @@ class ContactsController extends AbstractController
      */
     public function store(ContactsCreateRequest $request)
     {
+        if($request->has('validateOnly') && $request->get('validateOnly') == true) {
+            return [
+                'validation'    =>  'success'
+            ];
+        }
+
         $model = ContactsService::create($request->validated());
 
         return ResponsableFactory::makeResponse($this, $model);
@@ -85,12 +121,18 @@ class ContactsController extends AbstractController
      * This method updates Contacts object on database.
      *
      * @param  $contactsId
-     * @param  CountryCreateRequest $request
+     * @param  ContactsUpdateRequest $request
      * @return mixed|null
      * @throws \NextDeveloper\Commons\Exceptions\CannotCreateModelException
      */
     public function update($contactsId, ContactsUpdateRequest $request)
     {
+        if($request->has('validateOnly') && $request->get('validateOnly') == true) {
+            return [
+                'validation'    =>  'success'
+            ];
+        }
+
         $model = ContactsService::update($contactsId, $request->validated());
 
         return ResponsableFactory::makeResponse($this, $model);
@@ -100,7 +142,6 @@ class ContactsController extends AbstractController
      * This method updates Contacts object on database.
      *
      * @param  $contactsId
-     * @param  CountryCreateRequest $request
      * @return mixed|null
      * @throws \NextDeveloper\Commons\Exceptions\CannotCreateModelException
      */

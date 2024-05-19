@@ -4,7 +4,9 @@ namespace NextDeveloper\Agenda\Database\Observers;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use NextDeveloper\Commons\Exceptions\NotAllowedException;
 use NextDeveloper\IAM\Helpers\UserHelper;
+use NextDeveloper\Events\Services\Events;
 
 /**
  * Class ContactsObserver
@@ -30,7 +32,12 @@ class ContactsObserver
      */
     public function creating(Model $model)
     {
-        return UserHelper::applyUserFields($model);
+        throw_if(
+            !UserHelper::can('create', $model),
+            new NotAllowedException('You are not allowed to create this record')
+        );
+
+        Events::fire('creating:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -40,6 +47,7 @@ class ContactsObserver
      */
     public function created(Model $model)
     {
+        Events::fire('created:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -49,6 +57,12 @@ class ContactsObserver
      */
     public function saving(Model $model)
     {
+        throw_if(
+            !UserHelper::can('save', $model),
+            new NotAllowedException('You are not allowed to save this record')
+        );
+
+        Events::fire('saving:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -58,6 +72,7 @@ class ContactsObserver
      */
     public function saved(Model $model)
     {
+        Events::fire('saved:NextDeveloper\Agenda\Contacts', $model);
     }
 
 
@@ -66,6 +81,12 @@ class ContactsObserver
      */
     public function updating(Model $model)
     {
+        throw_if(
+            !UserHelper::can('update', $model),
+            new NotAllowedException('You are not allowed to update this record')
+        );
+
+        Events::fire('updating:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -75,6 +96,7 @@ class ContactsObserver
      */
     public function updated(Model $model)
     {
+        Events::fire('updated:NextDeveloper\Agenda\Contacts', $model);
     }
 
 
@@ -83,6 +105,12 @@ class ContactsObserver
      */
     public function deleting(Model $model)
     {
+        throw_if(
+            !UserHelper::can('delete', $model),
+            new NotAllowedException('You are not allowed to delete this record')
+        );
+
+        Events::fire('deleting:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -92,6 +120,7 @@ class ContactsObserver
      */
     public function deleted(Model $model)
     {
+        Events::fire('deleted:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -101,6 +130,12 @@ class ContactsObserver
      */
     public function restoring(Model $model)
     {
+        throw_if(
+            !UserHelper::can('restore', $model),
+            new NotAllowedException('You are not allowed to restore this record')
+        );
+
+        Events::fire('restoring:NextDeveloper\Agenda\Contacts', $model);
     }
 
     /**
@@ -110,6 +145,7 @@ class ContactsObserver
      */
     public function restored(Model $model)
     {
+        Events::fire('restored:NextDeveloper\Agenda\Contacts', $model);
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
 }

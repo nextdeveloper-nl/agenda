@@ -35,6 +35,36 @@ class CalendarSubscriptionsController extends AbstractController
     }
 
     /**
+     * This function returns the list of actions that can be performed on this object.
+     *
+     * @return void
+     */
+    public function getActions()
+    {
+        $data = CalendarSubscriptionsService::getActions();
+
+        return ResponsableFactory::makeResponse($this, $data);
+    }
+
+    /**
+     * Makes the related action to the object
+     *
+     * @param  $objectId
+     * @param  $action
+     * @return array
+     */
+    public function doAction($objectId, $action)
+    {
+        $actionId = CalendarSubscriptionsService::doAction($objectId, $action);
+
+        return $this->withArray(
+            [
+            'action_id' =>  $actionId
+            ]
+        );
+    }
+
+    /**
      * This method receives ID for the related model and returns the item to the client.
      *
      * @param  $calendarSubscriptionsId
@@ -76,6 +106,12 @@ class CalendarSubscriptionsController extends AbstractController
      */
     public function store(CalendarSubscriptionsCreateRequest $request)
     {
+        if($request->has('validateOnly') && $request->get('validateOnly') == true) {
+            return [
+                'validation'    =>  'success'
+            ];
+        }
+
         $model = CalendarSubscriptionsService::create($request->validated());
 
         return ResponsableFactory::makeResponse($this, $model);
@@ -85,12 +121,18 @@ class CalendarSubscriptionsController extends AbstractController
      * This method updates CalendarSubscriptions object on database.
      *
      * @param  $calendarSubscriptionsId
-     * @param  CountryCreateRequest $request
+     * @param  CalendarSubscriptionsUpdateRequest $request
      * @return mixed|null
      * @throws \NextDeveloper\Commons\Exceptions\CannotCreateModelException
      */
     public function update($calendarSubscriptionsId, CalendarSubscriptionsUpdateRequest $request)
     {
+        if($request->has('validateOnly') && $request->get('validateOnly') == true) {
+            return [
+                'validation'    =>  'success'
+            ];
+        }
+
         $model = CalendarSubscriptionsService::update($calendarSubscriptionsId, $request->validated());
 
         return ResponsableFactory::makeResponse($this, $model);
@@ -100,7 +142,6 @@ class CalendarSubscriptionsController extends AbstractController
      * This method updates CalendarSubscriptions object on database.
      *
      * @param  $calendarSubscriptionsId
-     * @param  CountryCreateRequest $request
      * @return mixed|null
      * @throws \NextDeveloper\Commons\Exceptions\CannotCreateModelException
      */
