@@ -35,6 +35,36 @@ class AddressBooksController extends AbstractController
     }
 
     /**
+     * This function returns the list of actions that can be performed on this object.
+     *
+     * @return void
+     */
+    public function getActions()
+    {
+        $data = AddressBooksService::getActions();
+
+        return ResponsableFactory::makeResponse($this, $data);
+    }
+
+    /**
+     * Makes the related action to the object
+     *
+     * @param  $objectId
+     * @param  $action
+     * @return array
+     */
+    public function doAction($objectId, $action)
+    {
+        $actionId = AddressBooksService::doAction($objectId, $action);
+
+        return $this->withArray(
+            [
+            'action_id' =>  $actionId
+            ]
+        );
+    }
+
+    /**
      * This method receives ID for the related model and returns the item to the client.
      *
      * @param  $addressBooksId
@@ -76,6 +106,12 @@ class AddressBooksController extends AbstractController
      */
     public function store(AddressBooksCreateRequest $request)
     {
+        if($request->has('validateOnly') && $request->get('validateOnly') == true) {
+            return [
+                'validation'    =>  'success'
+            ];
+        }
+
         $model = AddressBooksService::create($request->validated());
 
         return ResponsableFactory::makeResponse($this, $model);
@@ -85,12 +121,18 @@ class AddressBooksController extends AbstractController
      * This method updates AddressBooks object on database.
      *
      * @param  $addressBooksId
-     * @param  CountryCreateRequest $request
+     * @param  AddressBooksUpdateRequest $request
      * @return mixed|null
      * @throws \NextDeveloper\Commons\Exceptions\CannotCreateModelException
      */
     public function update($addressBooksId, AddressBooksUpdateRequest $request)
     {
+        if($request->has('validateOnly') && $request->get('validateOnly') == true) {
+            return [
+                'validation'    =>  'success'
+            ];
+        }
+
         $model = AddressBooksService::update($addressBooksId, $request->validated());
 
         return ResponsableFactory::makeResponse($this, $model);
@@ -100,7 +142,6 @@ class AddressBooksController extends AbstractController
      * This method updates AddressBooks object on database.
      *
      * @param  $addressBooksId
-     * @param  CountryCreateRequest $request
      * @return mixed|null
      * @throws \NextDeveloper\Commons\Exceptions\CannotCreateModelException
      */
