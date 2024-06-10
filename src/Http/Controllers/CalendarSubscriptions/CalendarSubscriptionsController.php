@@ -55,7 +55,7 @@ class CalendarSubscriptionsController extends AbstractController
      */
     public function doAction($objectId, $action)
     {
-        $actionId = CalendarSubscriptionsService::doAction($objectId, $action);
+        $actionId = CalendarSubscriptionsService::doAction($objectId, $action, request()->all());
 
         return $this->withArray(
             [

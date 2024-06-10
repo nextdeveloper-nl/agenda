@@ -115,7 +115,7 @@ class AgendaServiceProvider extends AbstractServiceProvider
      */
     protected function registerRoutes()
     {
-        if (! $this->app->routesAreCached()) {
+        if ( ! $this->app->routesAreCached() && config('leo.allowed_routes.agenda', true) ) {
             $this->app['router']
                 ->namespace('NextDeveloper\Agenda\Http\Controllers')
                 ->group(__DIR__.DIRECTORY_SEPARATOR.'Http'.DIRECTORY_SEPARATOR.'api.routes.php');

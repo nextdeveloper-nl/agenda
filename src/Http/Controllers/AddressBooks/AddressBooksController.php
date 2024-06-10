@@ -55,7 +55,7 @@ class AddressBooksController extends AbstractController
      */
     public function doAction($objectId, $action)
     {
-        $actionId = AddressBooksService::doAction($objectId, $action);
+        $actionId = AddressBooksService::doAction($objectId, $action, request()->all());
 
         return $this->withArray(
             [

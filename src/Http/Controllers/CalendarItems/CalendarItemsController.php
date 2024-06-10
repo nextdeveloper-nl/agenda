@@ -55,7 +55,7 @@ class CalendarItemsController extends AbstractController
      */
     public function doAction($objectId, $action)
     {
-        $actionId = CalendarItemsService::doAction($objectId, $action);
+        $actionId = CalendarItemsService::doAction($objectId, $action, request()->all());
 
         return $this->withArray(
             [
