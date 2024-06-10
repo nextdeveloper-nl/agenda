@@ -55,7 +55,7 @@ class AllContactsController extends AbstractController
      */
     public function doAction($objectId, $action)
     {
-        $actionId = AllContactsService::doAction($objectId, $action);
+        $actionId = AllContactsService::doAction($objectId, $action, request()->all());
 
         return $this->withArray(
             [
