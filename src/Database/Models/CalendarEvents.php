@@ -6,27 +6,40 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use NextDeveloper\Commons\Database\Traits\Filterable;
-use NextDeveloper\Agenda\Database\Observers\AddressBooksObserver;
+use NextDeveloper\Agenda\Database\Observers\CalendarEventsObserver;
 use NextDeveloper\Commons\Database\Traits\UuidId;
 use NextDeveloper\Commons\Common\Cache\Traits\CleanCache;
 use NextDeveloper\Commons\Database\Traits\Taggable;
 
 /**
- * AddressBooks model.
+ * CalendarEvents model.
  *
  * @package  NextDeveloper\Agenda\Database\Models
  * @property integer $id
  * @property string $uuid
- * @property string $name
+ * @property string $title
  * @property string $description
+ * @property string $location
+ * @property array $guests
+ * @property \Carbon\Carbon $starts_at
+ * @property \Carbon\Carbon $ends_at
  * @property integer $iam_user_id
  * @property integer $iam_account_id
+ * @property integer $agenda_calendar_id
+ * @property boolean $is_out_of_office
+ * @property boolean $is_appointment_slot
+ * @property array $tags
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon $deleted_at
- * @property array $tags
+ * @property string $timezone
+ * @property boolean $is_all_day
+ * @property string $status
+ * @property string $meeting_link
+ * @property $data
+ * @property string $external_event_id
  */
-class AddressBooks extends Model
+class CalendarEvents extends Model
 {
     use Filterable, UuidId, CleanCache, Taggable;
     use SoftDeletes;
@@ -34,7 +47,7 @@ class AddressBooks extends Model
 
     public $timestamps = true;
 
-    protected $table = 'agenda_address_books';
+    protected $table = 'agenda_calendar_events';
 
 
     /**
@@ -43,11 +56,24 @@ class AddressBooks extends Model
     protected $guarded = [];
 
     protected $fillable = [
-            'name',
+            'title',
             'description',
+            'location',
+            'guests',
+            'starts_at',
+            'ends_at',
             'iam_user_id',
             'iam_account_id',
+            'agenda_calendar_id',
+            'is_out_of_office',
+            'is_appointment_slot',
             'tags',
+            'timezone',
+            'is_all_day',
+            'status',
+            'meeting_link',
+            'data',
+            'external_event_id',
     ];
 
     /**
@@ -71,12 +97,25 @@ class AddressBooks extends Model
      */
     protected $casts = [
     'id' => 'integer',
-    'name' => 'string',
+    'title' => 'string',
     'description' => 'string',
+    'location' => 'string',
+    'guests' => 'array:integer',
+    'starts_at' => 'datetime',
+    'ends_at' => 'datetime',
+    'agenda_calendar_id' => 'integer',
+    'is_out_of_office' => 'boolean',
+    'is_appointment_slot' => 'boolean',
+    'tags' => \NextDeveloper\Commons\Database\Casts\TextArray::class,
     'created_at' => 'datetime',
     'updated_at' => 'datetime',
     'deleted_at' => 'datetime',
-    'tags' => \NextDeveloper\Commons\Database\Casts\TextArray::class,
+    'timezone' => 'string',
+    'is_all_day' => 'boolean',
+    'status' => 'string',
+    'meeting_link' => 'string',
+    'data' => 'array',
+    'external_event_id' => 'string',
     ];
 
     /**
@@ -85,6 +124,8 @@ class AddressBooks extends Model
      @var array
      */
     protected $dates = [
+    'starts_at',
+    'ends_at',
     'created_at',
     'updated_at',
     'deleted_at',
@@ -110,7 +151,7 @@ class AddressBooks extends Model
         parent::boot();
 
         //  We create and add Observer even if we wont use it.
-        parent::observe(AddressBooksObserver::class);
+        parent::observe(CalendarEventsObserver::class);
 
         self::registerScopes();
     }
@@ -118,7 +159,7 @@ class AddressBooks extends Model
     public static function registerScopes()
     {
         $globalScopes = config('agenda.scopes.global');
-        $modelScopes = config('agenda.scopes.agenda_address_books');
+        $modelScopes = config('agenda.scopes.agenda_calendar_events');
 
         if(!$modelScopes) { $modelScopes = [];
         }
@@ -138,9 +179,5 @@ class AddressBooks extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
-
-
-
 
 }
