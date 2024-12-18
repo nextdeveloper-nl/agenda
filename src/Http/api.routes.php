@@ -44,24 +44,45 @@ Route::prefix('agenda')->group(
             }
         );
 
-        Route::prefix('calendar-items')->group(
+        Route::prefix('calendar-events')->group(
             function () {
-                Route::get('/', 'CalendarItems\CalendarItemsController@index');
-                Route::get('/actions', 'CalendarItems\CalendarItemsController@getActions');
+                Route::get('/', 'CalendarEvents\CalendarEventsController@index');
+                Route::get('/actions', 'CalendarEvents\CalendarEventsController@getActions');
 
-                Route::get('{agenda_calendar_items}/tags ', 'CalendarItems\CalendarItemsController@tags');
-                Route::post('{agenda_calendar_items}/tags ', 'CalendarItems\CalendarItemsController@saveTags');
-                Route::get('{agenda_calendar_items}/addresses ', 'CalendarItems\CalendarItemsController@addresses');
-                Route::post('{agenda_calendar_items}/addresses ', 'CalendarItems\CalendarItemsController@saveAddresses');
+                Route::get('{agenda_calendar_events}/tags ', 'CalendarEvents\CalendarEventsController@tags');
+                Route::post('{agenda_calendar_events}/tags ', 'CalendarEvents\CalendarEventsController@saveTags');
+                Route::get('{agenda_calendar_events}/addresses ', 'CalendarEvents\CalendarEventsController@addresses');
+                Route::post('{agenda_calendar_events}/addresses ', 'CalendarEvents\CalendarEventsController@saveAddresses');
 
-                Route::get('/{agenda_calendar_items}/{subObjects}', 'CalendarItems\CalendarItemsController@relatedObjects');
-                Route::get('/{agenda_calendar_items}', 'CalendarItems\CalendarItemsController@show');
+                Route::get('/{agenda_calendar_events}/{subObjects}', 'CalendarEvents\CalendarEventsController@relatedObjects');
+                Route::get('/{agenda_calendar_events}', 'CalendarEvents\CalendarEventsController@show');
 
-                Route::post('/', 'CalendarItems\CalendarItemsController@store');
-                Route::post('/{agenda_calendar_items}/do/{action}', 'CalendarItems\CalendarItemsController@doAction');
+                Route::post('/', 'CalendarEvents\CalendarEventsController@store');
+                Route::post('/{agenda_calendar_events}/do/{action}', 'CalendarEvents\CalendarEventsController@doAction');
 
-                Route::patch('/{agenda_calendar_items}', 'CalendarItems\CalendarItemsController@update');
-                Route::delete('/{agenda_calendar_items}', 'CalendarItems\CalendarItemsController@destroy');
+                Route::patch('/{agenda_calendar_events}', 'CalendarEvents\CalendarEventsController@update');
+                Route::delete('/{agenda_calendar_events}', 'CalendarEvents\CalendarEventsController@destroy');
+            }
+        );
+
+        Route::prefix('address-books')->group(
+            function () {
+                Route::get('/', 'AddressBooks\AddressBooksController@index');
+                Route::get('/actions', 'AddressBooks\AddressBooksController@getActions');
+
+                Route::get('{agenda_address_books}/tags ', 'AddressBooks\AddressBooksController@tags');
+                Route::post('{agenda_address_books}/tags ', 'AddressBooks\AddressBooksController@saveTags');
+                Route::get('{agenda_address_books}/addresses ', 'AddressBooks\AddressBooksController@addresses');
+                Route::post('{agenda_address_books}/addresses ', 'AddressBooks\AddressBooksController@saveAddresses');
+
+                Route::get('/{agenda_address_books}/{subObjects}', 'AddressBooks\AddressBooksController@relatedObjects');
+                Route::get('/{agenda_address_books}', 'AddressBooks\AddressBooksController@show');
+
+                Route::post('/', 'AddressBooks\AddressBooksController@store');
+                Route::post('/{agenda_address_books}/do/{action}', 'AddressBooks\AddressBooksController@doAction');
+
+                Route::patch('/{agenda_address_books}', 'AddressBooks\AddressBooksController@update');
+                Route::delete('/{agenda_address_books}', 'AddressBooks\AddressBooksController@destroy');
             }
         );
 
@@ -86,24 +107,24 @@ Route::prefix('agenda')->group(
             }
         );
 
-        Route::prefix('address-books')->group(
+        Route::prefix('calendar-event-attendees')->group(
             function () {
-                Route::get('/', 'AddressBooks\AddressBooksController@index');
-                Route::get('/actions', 'AddressBooks\AddressBooksController@getActions');
+                Route::get('/', 'CalendarEventAttendees\CalendarEventAttendeesController@index');
+                Route::get('/actions', 'CalendarEventAttendees\CalendarEventAttendeesController@getActions');
 
-                Route::get('{agenda_address_books}/tags ', 'AddressBooks\AddressBooksController@tags');
-                Route::post('{agenda_address_books}/tags ', 'AddressBooks\AddressBooksController@saveTags');
-                Route::get('{agenda_address_books}/addresses ', 'AddressBooks\AddressBooksController@addresses');
-                Route::post('{agenda_address_books}/addresses ', 'AddressBooks\AddressBooksController@saveAddresses');
+                Route::get('{agenda_calendar_event_attendees}/tags ', 'CalendarEventAttendees\CalendarEventAttendeesController@tags');
+                Route::post('{agenda_calendar_event_attendees}/tags ', 'CalendarEventAttendees\CalendarEventAttendeesController@saveTags');
+                Route::get('{agenda_calendar_event_attendees}/addresses ', 'CalendarEventAttendees\CalendarEventAttendeesController@addresses');
+                Route::post('{agenda_calendar_event_attendees}/addresses ', 'CalendarEventAttendees\CalendarEventAttendeesController@saveAddresses');
 
-                Route::get('/{agenda_address_books}/{subObjects}', 'AddressBooks\AddressBooksController@relatedObjects');
-                Route::get('/{agenda_address_books}', 'AddressBooks\AddressBooksController@show');
+                Route::get('/{agenda_calendar_event_attendees}/{subObjects}', 'CalendarEventAttendees\CalendarEventAttendeesController@relatedObjects');
+                Route::get('/{agenda_calendar_event_attendees}', 'CalendarEventAttendees\CalendarEventAttendeesController@show');
 
-                Route::post('/', 'AddressBooks\AddressBooksController@store');
-                Route::post('/{agenda_address_books}/do/{action}', 'AddressBooks\AddressBooksController@doAction');
+                Route::post('/', 'CalendarEventAttendees\CalendarEventAttendeesController@store');
+                Route::post('/{agenda_calendar_event_attendees}/do/{action}', 'CalendarEventAttendees\CalendarEventAttendeesController@doAction');
 
-                Route::patch('/{agenda_address_books}', 'AddressBooks\AddressBooksController@update');
-                Route::delete('/{agenda_address_books}', 'AddressBooks\AddressBooksController@destroy');
+                Route::patch('/{agenda_calendar_event_attendees}', 'CalendarEventAttendees\CalendarEventAttendeesController@update');
+                Route::delete('/{agenda_calendar_event_attendees}', 'CalendarEventAttendees\CalendarEventAttendeesController@destroy');
             }
         );
 
@@ -136,6 +157,22 @@ Route::prefix('agenda')->group(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 );
+
+
 

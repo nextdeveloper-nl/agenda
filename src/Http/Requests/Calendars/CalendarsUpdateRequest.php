@@ -21,6 +21,11 @@ class CalendarsUpdateRequest extends AbstractFormRequest
         'is_public' => 'boolean',
         'tags' => '',
         'color' => 'nullable|string',
+        'calendar_key' => 'nullable|string',
+        'source' => 'nullable|string',
+        'sync_enabled' => 'boolean',
+        'last_sync_status' => 'nullable|string',
+        'last_sync_at' => 'nullable|date',
         ];
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE

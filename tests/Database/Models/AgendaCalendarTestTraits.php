@@ -63,7 +63,11 @@ trait AgendaCalendarTestTraits
                 'object_type'  =>  'a',
                 'timezone'  =>  'a',
                 'color'  =>  'a',
-                            ],
+                'calendar_key'  =>  'a',
+                'source'  =>  'a',
+                'last_sync_status'  =>  'a',
+                                'last_sync_at'  =>  now(),
+                ],
                 ['http_errors' => false]
             ]
         );
@@ -440,6 +444,63 @@ trait AgendaCalendarTestTraits
         $this->assertTrue(true);
     }
 
+    public function test_agendacalendar_event_calendar_key_filter()
+    {
+        try {
+            $request = new Request(
+                [
+                'calendar_key'  =>  'a'
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function test_agendacalendar_event_source_filter()
+    {
+        try {
+            $request = new Request(
+                [
+                'source'  =>  'a'
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function test_agendacalendar_event_last_sync_status_filter()
+    {
+        try {
+            $request = new Request(
+                [
+                'last_sync_status'  =>  'a'
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
     public function test_agendacalendar_event_created_at_filter_start()
     {
         try {
@@ -484,6 +545,25 @@ trait AgendaCalendarTestTraits
             $request = new Request(
                 [
                 'deleted_atStart'  =>  now()
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function test_agendacalendar_event_last_sync_at_filter_start()
+    {
+        try {
+            $request = new Request(
+                [
+                'last_sync_atStart'  =>  now()
                 ]
             );
 
@@ -554,6 +634,25 @@ trait AgendaCalendarTestTraits
         $this->assertTrue(true);
     }
 
+    public function test_agendacalendar_event_last_sync_at_filter_end()
+    {
+        try {
+            $request = new Request(
+                [
+                'last_sync_atEnd'  =>  now()
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
     public function test_agendacalendar_event_created_at_filter_start_and_end()
     {
         try {
@@ -601,6 +700,26 @@ trait AgendaCalendarTestTraits
                 [
                 'deleted_atStart'  =>  now(),
                 'deleted_atEnd'  =>  now()
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function test_agendacalendar_event_last_sync_at_filter_start_and_end()
+    {
+        try {
+            $request = new Request(
+                [
+                'last_sync_atStart'  =>  now(),
+                'last_sync_atEnd'  =>  now()
                 ]
             );
 

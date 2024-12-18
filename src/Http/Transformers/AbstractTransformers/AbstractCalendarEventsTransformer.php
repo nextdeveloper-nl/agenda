@@ -2,8 +2,6 @@
 
 namespace NextDeveloper\Agenda\Http\Transformers\AbstractTransformers;
 
-use NextDeveloper\Agenda\Database\Models\Calendars;
-use NextDeveloper\Commons\Http\Transformers\AbstractTransformer;
 use NextDeveloper\Commons\Database\Models\Addresses;
 use NextDeveloper\Commons\Database\Models\Comments;
 use NextDeveloper\Commons\Database\Models\Meta;
@@ -22,14 +20,16 @@ use NextDeveloper\Commons\Http\Transformers\MetaTransformer;
 use NextDeveloper\Commons\Http\Transformers\VotesTransformer;
 use NextDeveloper\Commons\Http\Transformers\AddressesTransformer;
 use NextDeveloper\Commons\Http\Transformers\PhoneNumbersTransformer;
+use NextDeveloper\Agenda\Database\Models\CalendarEvents;
+use NextDeveloper\Commons\Http\Transformers\AbstractTransformer;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
 
 /**
- * Class CalendarsTransformer. This class is being used to manipulate the data we are serving to the customer
+ * Class CalendarEventsTransformer. This class is being used to manipulate the data we are serving to the customer
  *
  * @package NextDeveloper\Agenda\Http\Transformers
  */
-class AbstractCalendarsTransformer extends AbstractTransformer
+class AbstractCalendarEventsTransformer extends AbstractTransformer
 {
 
     /**
@@ -48,41 +48,46 @@ class AbstractCalendarsTransformer extends AbstractTransformer
     ];
 
     /**
-     * @param Calendars $model
+     * @param CalendarEvents $model
      *
      * @return array
      */
-    public function transform(Calendars $model)
+    public function transform(CalendarEvents $model)
     {
-                                                $iamAccountId = \NextDeveloper\IAM\Database\Models\Accounts::where('id', $model->iam_account_id)->first();
-                                                            $iamUserId = \NextDeveloper\IAM\Database\Models\Users::where('id', $model->iam_user_id)->first();
+                                                $iamUserId = \NextDeveloper\IAM\Database\Models\Users::where('id', $model->iam_user_id)->first();
+                                                            $iamAccountId = \NextDeveloper\IAM\Database\Models\Accounts::where('id', $model->iam_account_id)->first();
+                                                            $agendaCalendarId = \NextDeveloper\Agenda\Database\Models\Calendars::where('id', $model->agenda_calendar_id)->first();
+                                                            $externalEventId = \NextDeveloper\\Database\Models\ExternalEvents::where('id', $model->external_event_id)->first();
                         
         return $this->buildPayload(
             [
             'id'  =>  $model->uuid,
-            'name'  =>  $model->name,
+            'title'  =>  $model->title,
             'description'  =>  $model->description,
-            'iam_account_id'  =>  $iamAccountId ? $iamAccountId->uuid : null,
+            'location'  =>  $model->location,
+            'guests'  =>  $model->guests,
+            'starts_at'  =>  $model->starts_at,
+            'ends_at'  =>  $model->ends_at,
             'iam_user_id'  =>  $iamUserId ? $iamUserId->uuid : null,
-            'object_id'  =>  $model->object_id,
-            'object_type'  =>  $model->object_type,
-            'timezone'  =>  $model->timezone,
-            'is_public'  =>  $model->is_public,
+            'iam_account_id'  =>  $iamAccountId ? $iamAccountId->uuid : null,
+            'agenda_calendar_id'  =>  $agendaCalendarId ? $agendaCalendarId->uuid : null,
+            'is_out_of_office'  =>  $model->is_out_of_office,
+            'is_appointment_slot'  =>  $model->is_appointment_slot,
             'tags'  =>  $model->tags,
-            'color'  =>  $model->color,
             'created_at'  =>  $model->created_at,
             'updated_at'  =>  $model->updated_at,
             'deleted_at'  =>  $model->deleted_at,
-            'calendar_key'  =>  $model->calendar_key,
-            'source'  =>  $model->source,
-            'sync_enabled'  =>  $model->sync_enabled,
-            'last_sync_status'  =>  $model->last_sync_status,
-            'last_sync_at'  =>  $model->last_sync_at,
+            'timezone'  =>  $model->timezone,
+            'is_all_day'  =>  $model->is_all_day,
+            'status'  =>  $model->status,
+            'meeting_link'  =>  $model->meeting_link,
+            'data'  =>  $model->data,
+            'external_event_id'  =>  $externalEventId ? $externalEventId->uuid : null,
             ]
         );
     }
 
-    public function includeStates(Calendars $model)
+    public function includeStates(CalendarEvents $model)
     {
         $states = States::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -91,7 +96,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($states, new StatesTransformer());
     }
 
-    public function includeActions(Calendars $model)
+    public function includeActions(CalendarEvents $model)
     {
         $input = get_class($model);
         $input = str_replace('\\Database\\Models', '', $input);
@@ -103,7 +108,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($actions, new AvailableActionsTransformer());
     }
 
-    public function includeMedia(Calendars $model)
+    public function includeMedia(CalendarEvents $model)
     {
         $media = Media::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -112,7 +117,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($media, new MediaTransformer());
     }
 
-    public function includeSocialMedia(Calendars $model)
+    public function includeSocialMedia(CalendarEvents $model)
     {
         $socialMedia = SocialMedia::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -121,7 +126,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($socialMedia, new SocialMediaTransformer());
     }
 
-    public function includeComments(Calendars $model)
+    public function includeComments(CalendarEvents $model)
     {
         $comments = Comments::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -130,7 +135,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($comments, new CommentsTransformer());
     }
 
-    public function includeVotes(Calendars $model)
+    public function includeVotes(CalendarEvents $model)
     {
         $votes = Votes::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -139,7 +144,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($votes, new VotesTransformer());
     }
 
-    public function includeMeta(Calendars $model)
+    public function includeMeta(CalendarEvents $model)
     {
         $meta = Meta::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -148,7 +153,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($meta, new MetaTransformer());
     }
 
-    public function includePhoneNumbers(Calendars $model)
+    public function includePhoneNumbers(CalendarEvents $model)
     {
         $phoneNumbers = PhoneNumbers::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -157,7 +162,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($phoneNumbers, new PhoneNumbersTransformer());
     }
 
-    public function includeAddresses(Calendars $model)
+    public function includeAddresses(CalendarEvents $model)
     {
         $addresses = Addresses::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -166,10 +171,5 @@ class AbstractCalendarsTransformer extends AbstractTransformer
         return $this->collection($addresses, new AddressesTransformer());
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
-
-
-
-
 
 }
