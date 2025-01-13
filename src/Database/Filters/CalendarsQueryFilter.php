@@ -62,10 +62,29 @@ class CalendarsQueryFilter extends AbstractQueryFilter
     {
         return $this->builder->where('color', 'like', '%' . $value . '%');
     }
-
-    public function isPublic()
+    
+    public function calendarKey($value)
     {
-        return $this->builder->where('is_public', true);
+        return $this->builder->where('calendar_key', 'like', '%' . $value . '%');
+    }
+    
+    public function source($value)
+    {
+        return $this->builder->where('source', 'like', '%' . $value . '%');
+    }
+    
+    public function lastSyncStatus($value)
+    {
+        return $this->builder->where('last_sync_status', 'like', '%' . $value . '%');
+    }
+
+    public function isPublic($value)
+    {
+        if(!is_bool($value)) {
+            $value = false;
+        }
+
+        return $this->builder->where('is_public', $value);
     }
 
     public function createdAtStart($date)
@@ -98,6 +117,16 @@ class CalendarsQueryFilter extends AbstractQueryFilter
         return $this->builder->where('deleted_at', '<=', $date);
     }
 
+    public function lastSyncAtStart($date)
+    {
+        return $this->builder->where('last_sync_at', '>=', $date);
+    }
+
+    public function lastSyncAtEnd($date)
+    {
+        return $this->builder->where('last_sync_at', '<=', $date);
+    }
+
     public function iamAccountId($value)
     {
             $iamAccount = \NextDeveloper\IAM\Database\Models\Accounts::where('uuid', $value)->first();
@@ -117,5 +146,7 @@ class CalendarsQueryFilter extends AbstractQueryFilter
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
+
 
 }
