@@ -4,14 +4,17 @@ namespace NextDeveloper\Agenda\Console\Commands;
 
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use NextDeveloper\Agenda\Database\Models\CalendarEvents;
 use NextDeveloper\Agenda\Database\Models\CalendarEventAttendees;
 use NextDeveloper\Agenda\Database\Models\Calendars;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
+use NextDeveloper\Commons\Helpers\StateHelper;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
+use NextDeveloper\IAM\Helpers\UserHelper;
 
 class FetchCalendarEventsCommand extends Command
 {
@@ -37,34 +40,25 @@ class FetchCalendarEventsCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
      */
-    public function handle(): int
+    public function handle(): void
     {
-        try {
-            $this->info('Starting calendar events fetch process...');
+        $this->info('Starting calendar events fetch process...');
 
-            $count = $this->fetchGoogleCalendarEvents();
+        $this->fetchGoogleCalendarEvents();
 
-            $this->info("Successfully processed events from {$count} calendars");
-            return 0;
+        $this->info("Successfully processed events from all calendars");
 
-        } catch (Exception $e) {
-            $this->error("Calendar events fetch failed: {$e->getMessage()}");
-            Log::error('[Agenda::Console/Command::Calendar events fetch failed]', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return 1;
-        }
     }
 
     /**
      * Fetch events for all calendars
      *
-     * @return int
+     * @return void
+     * @throws Exception
      */
-    private function fetchGoogleCalendarEvents(): int
+    private function fetchGoogleCalendarEvents(): void
     {
         $calendars = Calendars::withoutGlobalScopes()
             ->where('source', 'Google')
@@ -73,50 +67,33 @@ class FetchCalendarEventsCommand extends Command
 
         if ($calendars->isEmpty()) {
             $this->warn('No calendars found');
-            return 0;
+            return;
         }
 
         $progressBar = $this->output->createProgressBar($calendars->count());
         $progressBar->start();
 
-        $count = 0;
+
         foreach ($calendars as $calendar) {
-            try {
-                if ($this->processCalendarEvents($calendar)) {
-                    $count++;
-                }
-            } catch (Exception $e) {
-                Log::warning('[Agenda::Console/Command::Calendar events fetch failed]', [
-                    'calendar_id' => $calendar->id,
-                    'user_id' => $calendar->iam_user_id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $this->error("Failed to fetch events for calendar {$calendar->id}");
-            }
-
+            $this->processCalendarEvents($calendar);
             $progressBar->advance();
         }
 
         $progressBar->finish();
         $this->newLine();
 
-        Log::info('[Agenda::Console/Command::Calendar events fetch completed]', [
-            'total_calendars' => $calendars->count(),
-            'successful_fetches' => $count,
-        ]);
+        Log::info('[Agenda::Console/Command::Calendar events fetch completed]');
 
-        return $count;
     }
 
     /**
      * Process events for a single calendar
      *
      * @param Calendars $calendar
-     * @return bool
+     * @return void
      * @throws Exception
      */
-    private function processCalendarEvents(Calendars $calendar): bool
+    private function processCalendarEvents(Calendars $calendar): void
     {
         // Get user's login mechanism
         $externalService = ExternalServices::query()
@@ -130,17 +107,32 @@ class FetchCalendarEventsCommand extends Command
                 'calendar_id' => $calendar->id,
                 'iam_user_id' => $calendar->iam_user_id,
             ]);
-            return false;
+            return;
         }
+
+        UserHelper::setUserById($externalService->iam_user_id);
+        UserHelper::setCurrentAccountById($externalService->iam_account_id);
 
         try {
             $service = new Calendar($externalService->token);
 
+            if ($service->isTokenExpired()) {
+                $service->refreshToken($externalService->refresh_token);
+            }
+
+            // Get calendar start date for syncing
+            $startDateTime = $calendar->sync_start_date ? Carbon::parse($calendar->sync_start_date) : now();
+
+            // If calendar was last synced after the start date, use the last sync date
+            if ($startDateTime->lt($calendar->last_sync_at)) {
+                $startDateTime = $calendar->last_sync_at;
+            }
+
             $events = $service->getEvents($calendar->calendar_key, [
                 'singleEvents' => true,
                 'orderBy' => 'startTime',
-                'timeMin' => now()->subMonth()->format('c'), // ISO 8601 = Y-m-d\TH:i:sP
-                'timeMax' => now()->addYear()->format('c'),
+                'timeMin' => Carbon::parse($startDateTime)->format('c'),
+                'timeMax' => now()->addYears(10)->format('c'),
             ]);
 
             if (empty($events)) {
@@ -148,7 +140,15 @@ class FetchCalendarEventsCommand extends Command
                     'agenda_calendar_id' => $calendar->id,
                     'iam_user_id' => $calendar->iam_user_id,
                 ]);
-                return true; // Successfully processed, but no events found
+
+                StateHelper::setState(
+                    $calendar,
+                    'connection',
+                    'No events found for this calendar',
+                    StateHelper::STATE_WARNING
+                );
+
+                return; // Successfully processed, but no events found
             }
 
             foreach ($events as $eventData) {
@@ -161,13 +161,29 @@ class FetchCalendarEventsCommand extends Command
                 'event_count' => count($events),
             ]);
 
-            return true;
+            StateHelper::setState(
+                $calendar,
+                'connection',
+                'Events fetched successfully',
+                StateHelper::STATE_SUCCESS
+            );
+
+            return;
 
         } catch (Exception $e) {
-            throw new Exception(
-                "Failed to fetch events for calendar {$calendar->id}: {$e}",
-                0,
-                $e
+            Log::error('[Agenda::Console/Command::Events fetch failed]', [
+                'agenda_calendar_id' => $calendar->id,
+                'iam_user_id' => $calendar->iam_user_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            StateHelper::setState(
+                $calendar,
+                'connection',
+                'Failed to fetch events',
+                StateHelper::STATE_ERROR,
+                $e->getMessage()
             );
         }
     }
@@ -211,6 +227,11 @@ class FetchCalendarEventsCommand extends Command
         }
 
         $this->updateOrCreateEventAttendees($calendarEvent, $eventData['attendees']);
+
+        $calendar->updateQuietly([
+            'last_sync_status'  => 'success',
+            'last_sync_at'      => now(),
+        ]);
     }
 
     /**
