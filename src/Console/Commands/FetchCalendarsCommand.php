@@ -8,15 +8,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use NextDeveloper\Agenda\Database\Models\Calendars;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
+use NextDeveloper\Commons\Database\Models\ExternalServices;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
 
-class FetchCalendarCommand extends Command
+class FetchCalendarsCommand extends Command
 {
-    /**
-     * The login mechanism for Google
-     */
-    private const GOOGLE_LOGIN = 'GoogleLogin';
+
+    private const SERVICE_IDS = ['google_calendar'];
 
     /**
      * The name and signature of the console command.
@@ -63,36 +62,38 @@ class FetchCalendarCommand extends Command
      */
     private function fetchGoogleCalendars(): int
     {
-        $query = $this->getLatestMechanismsQuery(self::GOOGLE_LOGIN);
+        $query = ExternalServices::query()
+            ->withoutGlobalScopes()
+            ->whereIn('code', self::SERVICE_IDS);
 
         // Apply user filter if specified
         if ($userId = $this->option('user')) {
             $query->where('iam_user_id', $userId);
         }
 
-        $mechanisms = $query->get();
+        $services = $query->get();
 
-        if ($mechanisms->isEmpty()) {
+        if ($services->isEmpty()) {
             $this->warn('No users found with valid Google login mechanisms');
             return 0;
         }
 
-        $progressBar = $this->output->createProgressBar($mechanisms->count());
+        $progressBar = $this->output->createProgressBar($services->count());
         $progressBar->start();
 
         $count = 0;
-        foreach ($mechanisms as $mechanism) {
+        foreach ($services as $service) {
             try {
-                if ($this->processUserCalendars($mechanism)) {
+                if ($this->processUserCalendars($service)) {
                     $count++;
                 }
             } catch (Exception $e) {
                 Log::warning('[Agenda::Console/Command::User calendar fetch failed]', [
-                    'user_id' => $mechanism->iam_user_id,
+                    'id' => $service->id,
                     'error' => $e->getMessage(),
                 ]);
 
-                $this->error("Failed to fetch calendar for user {$mechanism->iam_user_id}");
+                $this->error("Failed to fetch calendar for service ID {$service->id}: {$e->getMessage()}");
             }
 
             $progressBar->advance();
@@ -102,7 +103,7 @@ class FetchCalendarCommand extends Command
         $this->newLine();
 
         Log::info('[Agenda::Console/Command::Calendar fetch completed]', [
-            'total_users' => $mechanisms->count(),
+            'total_services' => $services->count(),
             'successful_fetches' => $count,
         ]);
 
@@ -110,74 +111,38 @@ class FetchCalendarCommand extends Command
     }
 
     /**
-     * Get query for latest Google login mechanisms
-     *
-     * @param string $mechanism
-     * @return Builder
-     */
-    private function getLatestMechanismsQuery(string $mechanism)
-    {
-        return LoginMechanisms::withoutGlobalScope(AuthorizationScope::class)
-            ->whereIn('id', function ($query) use ($mechanism) {
-                $query->select(\DB::raw('MAX(id)'))
-                    ->from('iam_login_mechanisms')
-                    ->where('login_mechanism', $mechanism)
-                    ->where('is_latest', true)
-                    ->groupBy('iam_user_id');
-            });
-    }
-
-    /**
      * Process calendars for a single user
      *
-     * @param LoginMechanisms $mechanism
+     * @param ExternalServices $externalService
      * @return bool
      * @throws Exception
      */
-    private function processUserCalendars(LoginMechanisms $mechanism): bool
+    private function processUserCalendars(ExternalServices $externalService): bool
     {
-        $userScopes = $mechanism->login_data['scopes'] ?? [];
-        $requiredScopes = config('agenda.google-scopes.calendar');
-
-        // Check if user has any of the required calendar scopes
-        $hasRequiredScopes = !empty(array_intersect($userScopes, $requiredScopes));
-
-        if (!$hasRequiredScopes) {
-            Log::info('[Agenda::Console/Command::Skipping user - missing required scope]', [
-                'user_id'           => $mechanism->iam_user_id,
-                'user_scopes'       => $userScopes,
-                'required_scopes'   => $requiredScopes,
-            ]);
-            return false;
-        }
 
         try {
-            $service = new Calendar($mechanism->login_data['token']);
+            $service = new Calendar($externalService->token);
             $calendars = $service->getCalendars();
 
             if (empty($calendars)) {
-                Log::info('[Agenda::Console/Command::No calendars found for user]', [
-                    'user_id' => $mechanism->iam_user_id
+                Log::info('[Agenda::Console/Command::No calendars found for service]', [
+                    'service_id' => $externalService->id,
                 ]);
                 return true; // Successfully processed, but no calendars found
             }
 
             foreach ($calendars as $calendarData) {
-                $this->updateOrCreateCalendar($mechanism->iam_user_id, $calendarData);
+                $this->updateOrCreateCalendar($externalService->iam_user_id, $calendarData);
             }
 
             Log::info('[Agenda::Console/Command::Calendars processed successfully]', [
-                'user_id' => $mechanism->iam_user_id,
+                'user_id' => $externalService->iam_user_id,
                 'calendar_count' => count($calendars)
             ]);
 
             return true;
         } catch (Exception $e) {
-            throw new Exception(
-                "Failed to fetch calendar for user {$mechanism->iam_user_id}: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new Exception("Failed to fetch calendar : {$e->getMessage()}",);
         }
     }
 

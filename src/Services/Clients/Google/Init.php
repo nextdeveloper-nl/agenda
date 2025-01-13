@@ -12,6 +12,7 @@ class Init
 
     public function __construct($token)
     {
+        $token = decrypt($token);
         $this->client = new GoogleClient();
         $this->client->setAccessToken($token);
     }

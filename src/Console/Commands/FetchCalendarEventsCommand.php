@@ -9,15 +9,16 @@ use NextDeveloper\Agenda\Database\Models\CalendarEvents;
 use NextDeveloper\Agenda\Database\Models\CalendarEventAttendees;
 use NextDeveloper\Agenda\Database\Models\Calendars;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
+use NextDeveloper\Commons\Database\Models\ExternalServices;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
 
-class FetchCalendarEventCommand extends Command
+class FetchCalendarEventsCommand extends Command
 {
     /**
      * The login mechanism for Google
      */
-    private const GOOGLE_LOGIN = 'GoogleLogin';
+    private const SERVICE_IDS = ['google_calendar'];
 
     /**
      * The name and signature of the console command.
@@ -118,22 +119,22 @@ class FetchCalendarEventCommand extends Command
     private function processCalendarEvents(Calendars $calendar): bool
     {
         // Get user's login mechanism
-        $mechanism = LoginMechanisms::withoutGlobalScope(AuthorizationScope::class)
+        $externalService = ExternalServices::query()
+            ->withoutGlobalScope(AuthorizationScope::class)
             ->where('iam_user_id', $calendar->iam_user_id)
-            ->where('login_mechanism', self::GOOGLE_LOGIN)
-            ->where('is_latest', true)
+            ->whereIn('code', self::SERVICE_IDS)
             ->first();
 
-        if (!$mechanism) {
-            Log::info('[Agenda::Console/Command::Skipping calendar - no valid login mechanism]', [
+        if (!$externalService) {
+            Log::info('[Agenda::Console/Command::Skipping calendar - no valid service found]', [
                 'calendar_id' => $calendar->id,
-                'user_id' => $calendar->iam_user_id,
+                'iam_user_id' => $calendar->iam_user_id,
             ]);
             return false;
         }
 
         try {
-            $service = new Calendar($mechanism->login_data['token']);
+            $service = new Calendar($externalService->token);
 
             $events = $service->getEvents($calendar->calendar_key, [
                 'singleEvents' => true,
