@@ -4,6 +4,8 @@ namespace NextDeveloper\Agenda;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\Facades\Log;
+use NextDeveloper\Agenda\Console\Commands\FetchCalendarsCommand;
+use NextDeveloper\Agenda\Console\Commands\FetchCalendarEventsCommand;
 use NextDeveloper\Commons\AbstractServiceProvider;
 
 /**
@@ -132,7 +134,8 @@ class AgendaServiceProvider extends AbstractServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands(
                 [
-
+                    FetchCalendarsCommand::class,
+                    FetchCalendarEventsCommand::class,
                 ]
             );
         }

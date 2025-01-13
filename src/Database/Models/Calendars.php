@@ -30,6 +30,11 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon $deleted_at
+ * @property string $calendar_key
+ * @property string $source
+ * @property boolean $sync_enabled
+ * @property string $last_sync_status
+ * @property \Carbon\Carbon $last_sync_at
  */
 class Calendars extends Model
 {
@@ -58,6 +63,11 @@ class Calendars extends Model
             'is_public',
             'tags',
             'color',
+            'calendar_key',
+            'source',
+            'sync_enabled',
+            'last_sync_status',
+            'last_sync_at',
     ];
 
     /**
@@ -92,6 +102,11 @@ class Calendars extends Model
     'created_at' => 'datetime',
     'updated_at' => 'datetime',
     'deleted_at' => 'datetime',
+    'calendar_key' => 'string',
+    'source' => 'string',
+    'sync_enabled' => 'boolean',
+    'last_sync_status' => 'string',
+    'last_sync_at' => 'datetime',
     ];
 
     /**
@@ -103,6 +118,7 @@ class Calendars extends Model
     'created_at',
     'updated_at',
     'deleted_at',
+    'last_sync_at',
     ];
 
     /**
@@ -153,6 +169,8 @@ class Calendars extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
+
 
 
 
