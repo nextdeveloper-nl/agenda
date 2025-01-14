@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Log;
 use NextDeveloper\Agenda\Database\Models\Calendars;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
+use NextDeveloper\Commons\Helpers\StateHelper;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
+use NextDeveloper\IAM\Helpers\UserHelper;
 
 class FetchCalendarsCommand extends Command
 {
@@ -34,33 +36,25 @@ class FetchCalendarsCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
+     * @throws Exception
      */
-    public function handle(): int
+    public function handle(): void
     {
-        try {
-            $this->info('Starting calendar fetch process...');
+        $this->info('Starting calendar fetch process...');
 
-            $count = $this->fetchGoogleCalendars();
+        $this->fetchGoogleCalendars();
 
-            $this->info("Successfully processed calendars for {$count} users");
-            return 0;
-        } catch (Exception $e) {
-            $this->error("Calendar fetch failed: {$e->getMessage()}");
-            Log::error('[Agenda::Console/Command::Calendar fetch failed]', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return 1;
-        }
+        $this->info("Successfully processed calendars fetched");
     }
 
     /**
      * Fetch Google calendars for users
      *
-     * @return int Number of users processed
+     * @return void Number of users processed
+     * @throws Exception
      */
-    private function fetchGoogleCalendars(): int
+    private function fetchGoogleCalendars()
     {
         $query = ExternalServices::query()
             ->withoutGlobalScopes()
@@ -75,74 +69,94 @@ class FetchCalendarsCommand extends Command
 
         if ($services->isEmpty()) {
             $this->warn('No users found with valid Google login mechanisms');
-            return 0;
+            return;
         }
 
         $progressBar = $this->output->createProgressBar($services->count());
         $progressBar->start();
 
-        $count = 0;
         foreach ($services as $service) {
-            try {
-                if ($this->processUserCalendars($service)) {
-                    $count++;
-                }
-            } catch (Exception $e) {
-                Log::warning('[Agenda::Console/Command::User calendar fetch failed]', [
-                    'id' => $service->id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $this->error("Failed to fetch calendar for service ID {$service->id}: {$e->getMessage()}");
-            }
-
-            $progressBar->advance();
+           $this->processUserCalendars($service);
+           $progressBar->advance();
         }
 
         $progressBar->finish();
         $this->newLine();
 
-        Log::info('[Agenda::Console/Command::Calendar fetch completed]', [
-            'total_services' => $services->count(),
-            'successful_fetches' => $count,
-        ]);
-
-        return $count;
+        Log::info('[Agenda::Console/Command::Calendar fetch completed]');
     }
 
     /**
      * Process calendars for a single user
      *
      * @param ExternalServices $externalService
-     * @return bool
+     * @return void
      * @throws Exception
      */
-    private function processUserCalendars(ExternalServices $externalService): bool
+    private function processUserCalendars(ExternalServices $externalService): void
     {
 
         try {
+
+            UserHelper::setUserById($externalService->iam_user_id);
+            UserHelper::setCurrentAccountById($externalService->iam_account_id);
+
             $service = new Calendar($externalService->token);
+
+            if ($service->isTokenExpired()) {
+                $service->refreshToken($externalService->refresh_token);
+            }
+
             $calendars = $service->getCalendars();
 
             if (empty($calendars)) {
-                Log::info('[Agenda::Console/Command::No calendars found for service]', [
-                    'service_id' => $externalService->id,
-                ]);
-                return true; // Successfully processed, but no calendars found
+
+                StateHelper::setState(
+                    $externalService,
+                    'connection',
+                    'No calendars found, please create a calendar first',
+                    StateHelper::STATE_ERROR
+                );
+
+                return;
             }
 
             foreach ($calendars as $calendarData) {
                 $this->updateOrCreateCalendar($externalService->iam_user_id, $calendarData);
             }
 
-            Log::info('[Agenda::Console/Command::Calendars processed successfully]', [
-                'user_id' => $externalService->iam_user_id,
-                'calendar_count' => count($calendars)
-            ]);
-
-            return true;
+            StateHelper::setState(
+                $externalService,
+                'connection',
+                'Calendars fetched successfully',
+                StateHelper::STATE_SUCCESS
+            );
         } catch (Exception $e) {
-            throw new Exception("Failed to fetch calendar : {$e->getMessage()}",);
+
+            if ($e->getMessage()) {
+                $error = json_decode($e->getMessage());
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    StateHelper::setState(
+                        $externalService,
+                        'connection',
+                        $error->error->message,
+                        StateHelper::STATE_ERROR
+                    );
+                }
+            }else
+            {
+                StateHelper::setState(
+                    $externalService,
+                    'connection',
+                    'We are unable to connect to the service. Maybe your token is expired. Please reconnect your account.',
+                    StateHelper::STATE_ERROR
+                );
+            }
+
+            Log::warning('[Agenda::Console/Command::Calendar fetch failed]', [
+                'iam_user_id' => $externalService->iam_user_id,
+                'error' => $e->getTraceAsString(),
+            ]);
         }
     }
 
