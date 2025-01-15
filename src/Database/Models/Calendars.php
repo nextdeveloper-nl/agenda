@@ -68,6 +68,7 @@ class Calendars extends Model
             'sync_enabled',
             'last_sync_status',
             'last_sync_at',
+            'sync_start_date',
     ];
 
     /**
