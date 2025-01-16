@@ -6,11 +6,19 @@ use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use NextDeveloper\Agenda\Database\Models\AddressBooks;
 use NextDeveloper\Agenda\Database\Models\CalendarEvents;
 use NextDeveloper\Agenda\Database\Models\CalendarEventAttendees;
 use NextDeveloper\Agenda\Database\Models\Calendars;
+use NextDeveloper\Agenda\Database\Models\Contacts;
+use NextDeveloper\Agenda\Services\AddressBooksService;
+use NextDeveloper\Agenda\Services\CalendarEventAttendeesService;
+use NextDeveloper\Agenda\Services\CalendarEventsService;
+use NextDeveloper\Agenda\Services\CalendarsService;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
+use NextDeveloper\Agenda\Services\ContactsService;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
+use NextDeveloper\Commons\Exceptions\NotAllowedException;
 use NextDeveloper\Commons\Helpers\StateHelper;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
@@ -121,7 +129,7 @@ class FetchCalendarEventsCommand extends Command
             }
 
             // Get calendar start date for syncing
-            $startDateTime = $calendar->sync_start_date ? Carbon::parse($calendar->sync_start_date) : now();
+            $startDateTime = $calendar->sync_start_date ? Carbon::parse($calendar->sync_start_date) : now()->subMonth();
 
             // If calendar was last synced after the start date, use the last sync date
             if ($startDateTime->lt($calendar->last_sync_at)) {
@@ -194,6 +202,8 @@ class FetchCalendarEventsCommand extends Command
      * @param Calendars $calendar
      * @param array $eventData
      * @return void
+     * @throws NotAllowedException
+     * @throws Exception
      */
     private function updateOrCreateEvent(Calendars $calendar, array $eventData): void
     {
@@ -208,27 +218,16 @@ class FetchCalendarEventsCommand extends Command
             ->first();
 
         if (!$calendarEvent) {
-            $calendarEvent = CalendarEvents::forceCreateQuietly([
-                'agenda_calendar_id'    => $calendar->id,
-                'external_event_id'     => $eventData['external_event_id'],
-                'title'                 => $eventData['title'],
-                'description'           => $eventData['description'],
-                'location'              => $eventData['location'],
-                'starts_at'             => $eventData['starts_at'],
-                'ends_at'               => $eventData['ends_at'],
-                'timezone'              => $eventData['timezone'],
-                'is_all_day'            => $eventData['is_all_day'],
-                'status'                => $eventData['status'],
-                'meeting_link'          => $eventData['meeting_link'],
-                'data'                  => $eventData['data'],
-            ]);
+            $calendarEvent = CalendarEventsService::create($eventData);
         } else {
-            $calendarEvent->updateQuietly($eventData);
+            CalendarEventsService::update($calendarEvent->uuid, $eventData);
         }
 
         $this->updateOrCreateEventAttendees($calendarEvent, $eventData['attendees']);
 
-        $calendar->updateQuietly([
+        $this->updateOrCreateCalendarContact($calendar->iam_user_id, $eventData['attendees']);
+
+        CalendarsService::update($calendar->uuid, [
             'last_sync_status'  => 'success',
             'last_sync_at'      => now(),
         ]);
@@ -240,6 +239,8 @@ class FetchCalendarEventsCommand extends Command
      * @param CalendarEvents $calendarEvent
      * @param array $attendees
      * @return void
+     * @throws NotAllowedException
+     * @throws Exception
      */
     private function updateOrCreateEventAttendees(CalendarEvents $calendarEvent, array $attendees): void
     {
@@ -254,10 +255,54 @@ class FetchCalendarEventsCommand extends Command
                 ->first();
 
             if (!$attendeeModel) {
-                CalendarEventAttendees::forceCreateQuietly($attendeeData);
+                CalendarEventAttendeesService::create($attendeeData);
             } else {
-                $attendeeModel->updateQuietly($attendeeData);
+                CalendarEventAttendeesService::update($attendeeModel->uuid, $attendeeData);
             }
         }
+    }
+
+    /**
+     * Update or create a calendar contact
+     *
+     * @param string $iam_user_id
+     * @param array $attendees
+     * @return void
+     * @throws Exception
+     */
+    private function updateOrCreateCalendarContact(string $iam_user_id, array $attendees): void
+    {
+
+        $addressBook = AddressBooks::withoutGlobalScopes()
+            ->where('iam_user_id', $iam_user_id)
+            ->where('name', 'Global Address Book')
+            ->first();
+
+        if (!$addressBook) {
+            $addressBook = AddressBooksService::create([
+                'name' => 'Global Address Book',
+            ]);
+        }
+
+        foreach ($attendees as $attendee) {
+
+            $calendarContact = Contacts::withoutGlobalScopes()
+                ->where('email', $attendee['email'])
+                ->where('iam_user_id', $iam_user_id)
+                ->first();
+
+            $data = [
+                'email'                     => $attendee['email'],
+                'name'                      => $attendee['name'],
+                'agenda_address_book_id'    => $addressBook->id,
+            ];
+
+            if (!$calendarContact) {
+                ContactsService::create($data);
+            }else {
+                ContactsService::update($calendarContact->uuid, $data);
+            }
+        }
+
     }
 }

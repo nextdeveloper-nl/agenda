@@ -7,8 +7,10 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use NextDeveloper\Agenda\Database\Models\Calendars;
+use NextDeveloper\Agenda\Services\CalendarsService;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
+use NextDeveloper\Commons\Exceptions\NotAllowedException;
 use NextDeveloper\Commons\Helpers\StateHelper;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
@@ -122,7 +124,7 @@ class FetchCalendarsCommand extends Command
             }
 
             foreach ($calendars as $calendarData) {
-                $this->updateOrCreateCalendar($externalService->iam_user_id, $calendarData);
+                $this->updateOrCreateCalendar($externalService->iam_account_id, $calendarData);
             }
 
             StateHelper::setState(
@@ -163,28 +165,29 @@ class FetchCalendarsCommand extends Command
     /**
      * Update or create a calendar entry
      *
-     * @param string $userId
+     * @param string $iamAccountId
      * @param array $calendarData
      * @return void
+     * @throws NotAllowedException
+     * @throws Exception
      */
-    private function updateOrCreateCalendar(string $userId, array $calendarData): void
+    private function updateOrCreateCalendar(string $iamAccountId, array $calendarData): void
     {
         $calendarData = array_merge($calendarData, [
             'source'        => 'Google',
             'object_type'   => 'NextDeveloper\IAM\Database\Models\Users',
-            'object_id'     => $userId,
-            'iam_user_id'   => $userId,
+            'object_id'     => $iamAccountId,
         ]);
 
         $calendar = Calendars::withoutGlobalScopes()
-            ->where('iam_user_id', $userId)
+            ->where('iam_account_id', $iamAccountId)
             ->where('calendar_key', $calendarData['calendar_key'])
             ->first();
 
         if (!$calendar) {
-            Calendars::forceCreateQuietly($calendarData);
+            CalendarsService::create($calendarData);
         } else {
-            $calendar->updateQuietly($calendarData);
+            CalendarsService::update($calendar->uuid, $calendarData);
         }
     }
 }
