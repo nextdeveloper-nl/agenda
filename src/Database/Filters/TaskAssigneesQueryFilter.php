@@ -10,7 +10,7 @@ use NextDeveloper\Commons\Database\Filters\AbstractQueryFilter;
  * This class automatically puts where clause on database so that use can filter
  * data returned from the query.
  */
-class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
+class TaskAssigneesQueryFilter extends AbstractQueryFilter
 {
 
     /**
@@ -21,24 +21,6 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
     public function comment($value)
     {
         return $this->builder->where('comment', 'like', '%' . $value . '%');
-    }
-
-    public function isOrganizer($value)
-    {
-        if(!is_bool($value)) {
-            $value = false;
-        }
-
-        return $this->builder->where('is_organizer', $value);
-    }
-
-    public function isOptional($value)
-    {
-        if(!is_bool($value)) {
-            $value = false;
-        }
-
-        return $this->builder->where('is_optional', $value);
     }
 
     public function createdAtStart($date)
@@ -71,12 +53,12 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
         return $this->builder->where('deleted_at', '<=', $date);
     }
 
-    public function agendaCalendarEventId($value)
+    public function agendaTaskItemId($value)
     {
-            $agendaCalendarEvent = \NextDeveloper\Agenda\Database\Models\CalendarEvents::where('uuid', $value)->first();
+            $agendaTaskItem = \NextDeveloper\Agenda\Database\Models\TaskItems::where('uuid', $value)->first();
 
-        if($agendaCalendarEvent) {
-            return $this->builder->where('agenda_calendar_event_id', '=', $agendaCalendarEvent->id);
+        if($agendaTaskItem) {
+            return $this->builder->where('agenda_task_item_id', '=', $agendaTaskItem->id);
         }
     }
 
@@ -99,5 +81,4 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
 }

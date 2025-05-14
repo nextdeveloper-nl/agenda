@@ -3,6 +3,7 @@
 namespace NextDeveloper\Agenda;
 
 use GuzzleHttp\Client as GuzzleClient;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Log;
 use NextDeveloper\Agenda\Console\Commands\FetchCalendarsCommand;
 use NextDeveloper\Agenda\Console\Commands\FetchCalendarEventsCommand;
@@ -30,7 +31,7 @@ class AgendaServiceProvider extends AbstractServiceProvider
         $this->publishes(
             [
             __DIR__.'/../config/agenda.php' => config_path('agenda.php'),
-            ], 'config'
+            ], 'config',
         );
 
         $this->loadViewsFrom($this->dir.'/../resources/views', 'Agenda');
@@ -40,6 +41,7 @@ class AgendaServiceProvider extends AbstractServiceProvider
         $this->bootModelBindings();
         $this->bootEvents();
         $this->bootLogger();
+        $this->bootSchedule();
     }
 
     /**
@@ -136,7 +138,7 @@ class AgendaServiceProvider extends AbstractServiceProvider
                 [
                     FetchCalendarsCommand::class,
                     FetchCalendarEventsCommand::class,
-                ]
+                ],
             );
         }
     }
@@ -161,4 +163,20 @@ class AgendaServiceProvider extends AbstractServiceProvider
         return $isSuccessfull;
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
+
+    protected function bootSchedule(): void
+    {
+        $this->app->booted(function () {
+            $schedule = $this->app->make(Schedule::class);
+
+            $schedule->command('agenda:fetch-calendars')
+                ->cron(config('agenda.schedule.cron'))
+                ->when(config('agenda.schedule.enabled'));
+
+            $schedule->command('agenda:fetch-calendar-events')
+                ->cron(config('agenda.schedule.cron'))
+                ->when(config('agenda.schedule.enabled'));
+
+        });
+    }
 }

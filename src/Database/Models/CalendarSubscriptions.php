@@ -20,10 +20,14 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  */
 class CalendarSubscriptions extends Model
 {
-    use Filterable, UuidId, CleanCache, Taggable;
+    use Filterable, CleanCache, Taggable;
 
 
     public $timestamps = false;
+
+    public $incrementing = false;
+
+
 
     protected $table = 'agenda_calendar_subscriptions';
 

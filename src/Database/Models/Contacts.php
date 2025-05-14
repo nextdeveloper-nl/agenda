@@ -36,7 +36,8 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  */
 class Contacts extends Model
 {
-    use Filterable, UuidId, CleanCache, Taggable;
+    use Filterable, CleanCache, Taggable;
+    use UuidId;
     use SoftDeletes;
 
 

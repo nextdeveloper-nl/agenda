@@ -16,4 +16,9 @@ return [
             'https://www.googleapis.com/auth/calendar.readonly',
         ],
     ],
+
+    'schedule' => [
+        'enabled'   => env('AGENDA_SCHEDULE_ENABLED', true),
+        'cron'      => env('AGENDA_SCHEDULE_CRON', '*/10 * * * *'), // 10 minutes
+    ],
 ];
