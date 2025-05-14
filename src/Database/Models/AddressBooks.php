@@ -28,7 +28,8 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  */
 class AddressBooks extends Model
 {
-    use Filterable, UuidId, CleanCache, Taggable;
+    use Filterable, CleanCache, Taggable;
+    use UuidId;
     use SoftDeletes;
 
 

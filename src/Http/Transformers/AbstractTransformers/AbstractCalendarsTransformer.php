@@ -78,6 +78,7 @@ class AbstractCalendarsTransformer extends AbstractTransformer
             'sync_enabled'  =>  $model->sync_enabled,
             'last_sync_status'  =>  $model->last_sync_status,
             'last_sync_at'  =>  $model->last_sync_at,
+            'sync_start_date'  =>  $model->sync_start_date,
             ]
         );
     }
