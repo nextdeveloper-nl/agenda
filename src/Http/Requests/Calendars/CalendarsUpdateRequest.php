@@ -26,6 +26,7 @@ class CalendarsUpdateRequest extends AbstractFormRequest
         'sync_enabled' => 'boolean',
         'last_sync_status' => 'nullable|string',
         'last_sync_at' => 'nullable|date',
+        'sync_start_date' => 'nullable|date',
         ];
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE

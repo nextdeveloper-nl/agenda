@@ -23,7 +23,7 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  * @property boolean $is_organizer
  * @property boolean $is_optional
  * @property string $comment
- * @property integer $calendar_event_id
+ * @property integer $agenda_calendar_event_id
  * @property integer $iam_user_id
  * @property integer $iam_account_id
  * @property \Carbon\Carbon $created_at
@@ -32,7 +32,8 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  */
 class CalendarEventAttendees extends Model
 {
-    use Filterable, UuidId, CleanCache, Taggable;
+    use Filterable, CleanCache, Taggable;
+    use UuidId;
     use SoftDeletes;
 
 
