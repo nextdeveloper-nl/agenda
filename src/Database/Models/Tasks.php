@@ -2,32 +2,47 @@
 
 namespace NextDeveloper\Agenda\Database\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use NextDeveloper\Commons\Database\Traits\Filterable;
-use NextDeveloper\Agenda\Database\Observers\AllContactsObserver;
+use NextDeveloper\Agenda\Database\Observers\TasksObserver;
 use NextDeveloper\Commons\Database\Traits\UuidId;
 use NextDeveloper\Commons\Common\Cache\Traits\CleanCache;
 use NextDeveloper\Commons\Database\Traits\Taggable;
 
 /**
- * AllContacts model.
+ * Tasks model.
  *
  * @package  NextDeveloper\Agenda\Database\Models
  * @property integer $id
  * @property string $uuid
- * @property string $search_string
+ * @property string $name
+ * @property string $description
+ * @property string $color
+ * @property string $google_id
+ * @property boolean $is_default
+ * @property string $object_type
+ * @property integer $object_id
  * @property integer $iam_user_id
+ * @property integer $iam_account_id
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property \Carbon\Carbon $deleted_at
  */
-class AllContacts extends Model
+class Tasks extends Model
 {
     use Filterable, CleanCache, Taggable;
     use UuidId;
+    use SoftDeletes;
 
 
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $table = 'agenda_all_contacts';
+
+
+
+    protected $table = 'agenda_tasks';
 
 
     /**
@@ -36,8 +51,15 @@ class AllContacts extends Model
     protected $guarded = [];
 
     protected $fillable = [
-            'search_string',
+            'name',
+            'description',
+            'color',
+            'google_id',
+            'is_default',
+            'object_type',
+            'object_id',
             'iam_user_id',
+            'iam_account_id',
     ];
 
     /**
@@ -61,7 +83,16 @@ class AllContacts extends Model
      */
     protected $casts = [
     'id' => 'integer',
-    'search_string' => 'string',
+    'name' => 'string',
+    'description' => 'string',
+    'color' => 'string',
+    'google_id' => 'string',
+    'is_default' => 'boolean',
+    'object_type' => 'string',
+    'object_id' => 'integer',
+    'created_at' => 'datetime',
+    'updated_at' => 'datetime',
+    'deleted_at' => 'datetime',
     ];
 
     /**
@@ -70,7 +101,9 @@ class AllContacts extends Model
      @var array
      */
     protected $dates = [
-
+    'created_at',
+    'updated_at',
+    'deleted_at',
     ];
 
     /**
@@ -93,7 +126,7 @@ class AllContacts extends Model
         parent::boot();
 
         //  We create and add Observer even if we wont use it.
-        parent::observe(AllContactsObserver::class);
+        parent::observe(TasksObserver::class);
 
         self::registerScopes();
     }
@@ -101,7 +134,7 @@ class AllContacts extends Model
     public static function registerScopes()
     {
         $globalScopes = config('agenda.scopes.global');
-        $modelScopes = config('agenda.scopes.agenda_all_contacts');
+        $modelScopes = config('agenda.scopes.agenda_tasks');
 
         if(!$modelScopes) { $modelScopes = [];
         }
@@ -121,8 +154,4 @@ class AllContacts extends Model
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
-
-
-
 }

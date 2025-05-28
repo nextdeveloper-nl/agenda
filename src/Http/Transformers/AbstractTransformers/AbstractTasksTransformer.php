@@ -20,16 +20,16 @@ use NextDeveloper\Commons\Http\Transformers\MetaTransformer;
 use NextDeveloper\Commons\Http\Transformers\VotesTransformer;
 use NextDeveloper\Commons\Http\Transformers\AddressesTransformer;
 use NextDeveloper\Commons\Http\Transformers\PhoneNumbersTransformer;
-use NextDeveloper\Agenda\Database\Models\CalendarEventAttendees;
+use NextDeveloper\Agenda\Database\Models\Tasks;
 use NextDeveloper\Commons\Http\Transformers\AbstractTransformer;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
 
 /**
- * Class CalendarEventAttendeesTransformer. This class is being used to manipulate the data we are serving to the customer
+ * Class TasksTransformer. This class is being used to manipulate the data we are serving to the customer
  *
  * @package NextDeveloper\Agenda\Http\Transformers
  */
-class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
+class AbstractTasksTransformer extends AbstractTransformer
 {
 
     /**
@@ -48,13 +48,13 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
     ];
 
     /**
-     * @param CalendarEventAttendees $model
+     * @param Tasks $model
      *
      * @return array
      */
-    public function transform(CalendarEventAttendees $model)
+    public function transform(Tasks $model)
     {
-                                                $agendaCalendarEventId = \NextDeveloper\Agenda\Database\Models\CalendarEvents::where('id', $model->agenda_calendar_event_id)->first();
+
                                                             $iamUserId = \NextDeveloper\IAM\Database\Models\Users::where('id', $model->iam_user_id)->first();
                                                             $iamAccountId = \NextDeveloper\IAM\Database\Models\Accounts::where('id', $model->iam_account_id)->first();
                         
@@ -62,12 +62,12 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
             [
             'id'  =>  $model->uuid,
             'name'  =>  $model->name,
-            'email'  =>  $model->email,
-            'response_status'  =>  $model->response_status,
-            'is_organizer'  =>  $model->is_organizer,
-            'is_optional'  =>  $model->is_optional,
-            'comment'  =>  $model->comment,
-            'agenda_calendar_event_id'  =>  $agendaCalendarEventId ? $agendaCalendarEventId->uuid : null,
+            'description'  =>  $model->description,
+            'color'  =>  $model->color,
+            'google_id'  =>  $model->google_id,
+            'is_default'  =>  $model->is_default,
+            'object_type'  =>  $model->object_type,
+            'object_id'  =>  $model->object_id,
             'iam_user_id'  =>  $iamUserId ? $iamUserId->uuid : null,
             'iam_account_id'  =>  $iamAccountId ? $iamAccountId->uuid : null,
             'created_at'  =>  $model->created_at,
@@ -77,7 +77,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         );
     }
 
-    public function includeStates(CalendarEventAttendees $model)
+    public function includeStates(Tasks $model)
     {
         $states = States::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -86,7 +86,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($states, new StatesTransformer());
     }
 
-    public function includeActions(CalendarEventAttendees $model)
+    public function includeActions(Tasks $model)
     {
         $input = get_class($model);
         $input = str_replace('\\Database\\Models', '', $input);
@@ -98,7 +98,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($actions, new AvailableActionsTransformer());
     }
 
-    public function includeMedia(CalendarEventAttendees $model)
+    public function includeMedia(Tasks $model)
     {
         $media = Media::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -107,7 +107,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($media, new MediaTransformer());
     }
 
-    public function includeSocialMedia(CalendarEventAttendees $model)
+    public function includeSocialMedia(Tasks $model)
     {
         $socialMedia = SocialMedia::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -116,7 +116,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($socialMedia, new SocialMediaTransformer());
     }
 
-    public function includeComments(CalendarEventAttendees $model)
+    public function includeComments(Tasks $model)
     {
         $comments = Comments::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -125,7 +125,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($comments, new CommentsTransformer());
     }
 
-    public function includeVotes(CalendarEventAttendees $model)
+    public function includeVotes(Tasks $model)
     {
         $votes = Votes::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -134,7 +134,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($votes, new VotesTransformer());
     }
 
-    public function includeMeta(CalendarEventAttendees $model)
+    public function includeMeta(Tasks $model)
     {
         $meta = Meta::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -143,7 +143,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($meta, new MetaTransformer());
     }
 
-    public function includePhoneNumbers(CalendarEventAttendees $model)
+    public function includePhoneNumbers(Tasks $model)
     {
         $phoneNumbers = PhoneNumbers::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -152,7 +152,7 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($phoneNumbers, new PhoneNumbersTransformer());
     }
 
-    public function includeAddresses(CalendarEventAttendees $model)
+    public function includeAddresses(Tasks $model)
     {
         $addresses = Addresses::where('object_type', get_class($model))
             ->where('object_id', $model->id)
@@ -161,5 +161,4 @@ class AbstractCalendarEventAttendeesTransformer extends AbstractTransformer
         return $this->collection($addresses, new AddressesTransformer());
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
 }

@@ -127,6 +127,16 @@ class CalendarsQueryFilter extends AbstractQueryFilter
         return $this->builder->where('last_sync_at', '<=', $date);
     }
 
+    public function syncStartDateStart($date)
+    {
+        return $this->builder->where('sync_start_date', '>=', $date);
+    }
+
+    public function syncStartDateEnd($date)
+    {
+        return $this->builder->where('sync_start_date', '<=', $date);
+    }
+
     public function iamAccountId($value)
     {
             $iamAccount = \NextDeveloper\IAM\Database\Models\Accounts::where('uuid', $value)->first();

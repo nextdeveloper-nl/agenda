@@ -84,7 +84,13 @@ class AgendaUserRole extends AbstractRole implements IAuthorizationRole
             'agenda_address_books_contacts:create',
             'agenda_address_books_contacts:update',
             'agenda_address_books_contacts:delete',
-
+            'agenda_tasks:read',
+            'agenda_task_items:read',
+            'agenda_task_items:update',
+            'agenda_task_assignees:read',
+            'agenda_task_assignees:create',
+            'agenda_task_assignees:update',
+            'agenda_task_assignees:delete',
         ];
     }
 

@@ -10,7 +10,7 @@ use NextDeveloper\Commons\Database\Filters\AbstractQueryFilter;
  * This class automatically puts where clause on database so that use can filter
  * data returned from the query.
  */
-class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
+class TasksQueryFilter extends AbstractQueryFilter
 {
 
     /**
@@ -18,27 +18,38 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
      */
     protected $builder;
     
-    public function comment($value)
+    public function name($value)
     {
-        return $this->builder->where('comment', 'like', '%' . $value . '%');
+        return $this->builder->where('name', 'like', '%' . $value . '%');
+    }
+    
+    public function description($value)
+    {
+        return $this->builder->where('description', 'like', '%' . $value . '%');
+    }
+    
+    public function color($value)
+    {
+        return $this->builder->where('color', 'like', '%' . $value . '%');
     }
 
-    public function isOrganizer($value)
+    public function googleId($value)
+    {
+        return $this->builder->where('google_id', 'like', '%' . $value . '%');
+    }
+    
+    public function objectType($value)
+    {
+        return $this->builder->where('object_type', 'like', '%' . $value . '%');
+    }
+
+    public function isDefault($value)
     {
         if(!is_bool($value)) {
             $value = false;
         }
 
-        return $this->builder->where('is_organizer', $value);
-    }
-
-    public function isOptional($value)
-    {
-        if(!is_bool($value)) {
-            $value = false;
-        }
-
-        return $this->builder->where('is_optional', $value);
+        return $this->builder->where('is_default', $value);
     }
 
     public function createdAtStart($date)
@@ -71,15 +82,6 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
         return $this->builder->where('deleted_at', '<=', $date);
     }
 
-    public function agendaCalendarEventId($value)
-    {
-            $agendaCalendarEvent = \NextDeveloper\Agenda\Database\Models\CalendarEvents::where('uuid', $value)->first();
-
-        if($agendaCalendarEvent) {
-            return $this->builder->where('agenda_calendar_event_id', '=', $agendaCalendarEvent->id);
-        }
-    }
-
     public function iamUserId($value)
     {
             $iamUser = \NextDeveloper\IAM\Database\Models\Users::where('uuid', $value)->first();
@@ -99,5 +101,4 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
-
 }

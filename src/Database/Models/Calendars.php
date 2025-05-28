@@ -35,10 +35,12 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  * @property boolean $sync_enabled
  * @property string $last_sync_status
  * @property \Carbon\Carbon $last_sync_at
+ * @property \Carbon\Carbon $sync_start_date
  */
 class Calendars extends Model
 {
-    use Filterable, UuidId, CleanCache, Taggable;
+    use Filterable, CleanCache, Taggable;
+    use UuidId;
     use SoftDeletes;
 
 
@@ -108,6 +110,7 @@ class Calendars extends Model
     'sync_enabled' => 'boolean',
     'last_sync_status' => 'string',
     'last_sync_at' => 'datetime',
+    'sync_start_date' => 'datetime',
     ];
 
     /**
@@ -120,6 +123,7 @@ class Calendars extends Model
     'updated_at',
     'deleted_at',
     'last_sync_at',
+    'sync_start_date',
     ];
 
     /**

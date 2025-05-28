@@ -67,6 +67,7 @@ trait AgendaCalendarTestTraits
                 'source'  =>  'a',
                 'last_sync_status'  =>  'a',
                                 'last_sync_at'  =>  now(),
+                    'sync_start_date'  =>  now(),
                 ],
                 ['http_errors' => false]
             ]
@@ -577,6 +578,25 @@ trait AgendaCalendarTestTraits
         $this->assertTrue(true);
     }
 
+    public function test_agendacalendar_event_sync_start_date_filter_start()
+    {
+        try {
+            $request = new Request(
+                [
+                'sync_start_dateStart'  =>  now()
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
     public function test_agendacalendar_event_created_at_filter_end()
     {
         try {
@@ -640,6 +660,25 @@ trait AgendaCalendarTestTraits
             $request = new Request(
                 [
                 'last_sync_atEnd'  =>  now()
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function test_agendacalendar_event_sync_start_date_filter_end()
+    {
+        try {
+            $request = new Request(
+                [
+                'sync_start_dateEnd'  =>  now()
                 ]
             );
 
@@ -720,6 +759,26 @@ trait AgendaCalendarTestTraits
                 [
                 'last_sync_atStart'  =>  now(),
                 'last_sync_atEnd'  =>  now()
+                ]
+            );
+
+            $filter = new AgendaCalendarQueryFilter($request);
+
+            $model = \NextDeveloper\Agenda\Database\Models\AgendaCalendar::filter($filter)->first();
+        } catch (\Exception $e) {
+            $this->assertFalse(false, $e->getMessage());
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function test_agendacalendar_event_sync_start_date_filter_start_and_end()
+    {
+        try {
+            $request = new Request(
+                [
+                'sync_start_dateStart'  =>  now(),
+                'sync_start_dateEnd'  =>  now()
                 ]
             );
 
