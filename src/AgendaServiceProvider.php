@@ -142,7 +142,7 @@ class AgendaServiceProvider extends AbstractServiceProvider
             );
         }
     }
-    
+
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
 
     protected function bootSchedule(): void
@@ -150,13 +150,13 @@ class AgendaServiceProvider extends AbstractServiceProvider
         $this->app->booted(function () {
             $schedule = $this->app->make(Schedule::class);
 
-            $schedule->command('agenda:fetch-calendars')
-                ->cron(config('agenda.schedule.cron'))
-                ->when(config('agenda.schedule.enabled'));
-
-            $schedule->command('agenda:fetch-calendar-events')
-                ->cron(config('agenda.schedule.cron'))
-                ->when(config('agenda.schedule.enabled'));
+//            $schedule->command('agenda:fetch-calendars')
+//                ->cron(config('agenda.schedule.cron'))
+//                ->when(config('agenda.schedule.enabled'));
+//
+//            $schedule->command('agenda:fetch-calendar-events')
+//                ->cron(config('agenda.schedule.cron'))
+//                ->when(config('agenda.schedule.enabled'));
 
         });
     }
