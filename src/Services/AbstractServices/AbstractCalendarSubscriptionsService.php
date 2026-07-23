@@ -25,7 +25,7 @@ use NextDeveloper\Commons\Exceptions\NotAllowedException;
  */
 class AbstractCalendarSubscriptionsService
 {
-    public static function get(CalendarSubscriptionsQueryFilter $filter = null, array $params = []) : Collection|LengthAwarePaginator
+    public static function get(?CalendarSubscriptionsQueryFilter $filter = null, array $params = []) : Collection|LengthAwarePaginator
     {
         $enablePaginate = array_key_exists('paginate', $params);
 
@@ -182,11 +182,11 @@ class AbstractCalendarSubscriptionsService
                 $data['iam_user_id']
             );
         }
-                    
+
         if(!array_key_exists('iam_user_id', $data)) {
             $data['iam_user_id']    = UserHelper::me()->id;
         }
-            
+
         try {
             $model = CalendarSubscriptions::create($data);
         } catch(\Exception $e) {
@@ -246,7 +246,7 @@ class AbstractCalendarSubscriptionsService
                 $data['iam_user_id']
             );
         }
-    
+
         Events::fire('updating:NextDeveloper\Agenda\CalendarSubscriptions', $model);
 
         try {

@@ -37,17 +37,17 @@ class CalendarItemsQueryFilter extends AbstractQueryFilter
      * @var Builder
      */
     protected $builder;
-    
+
     public function title($value)
     {
         return $this->builder->where('title', 'like', '%' . $value . '%');
     }
-    
+
     public function description($value)
     {
         return $this->builder->where('description', 'like', '%' . $value . '%');
     }
-    
+
     public function location($value)
     {
         return $this->builder->where('location', 'like', '%' . $value . '%');

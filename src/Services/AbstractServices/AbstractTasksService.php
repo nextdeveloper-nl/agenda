@@ -25,7 +25,7 @@ use NextDeveloper\Commons\Exceptions\NotAllowedException;
  */
 class AbstractTasksService
 {
-    public static function get(TasksQueryFilter $filter = null, array $params = []) : Collection|LengthAwarePaginator
+    public static function get(?TasksQueryFilter $filter = null, array $params = []) : Collection|LengthAwarePaginator
     {
         $enablePaginate = array_key_exists('paginate', $params);
 
@@ -134,7 +134,7 @@ class AbstractTasksService
         return Tasks::where('id', $id)->first();
     }
 
-    
+
     /**
      * This method returns the sub objects of the related models
      *
@@ -183,7 +183,7 @@ class AbstractTasksService
                 $data['iam_user_id']
             );
         }
-                    
+
         if(!array_key_exists('iam_user_id', $data)) {
             $data['iam_user_id']    = UserHelper::me()->id;
         }
@@ -193,11 +193,11 @@ class AbstractTasksService
                 $data['iam_account_id']
             );
         }
-            
+
         if(!array_key_exists('iam_account_id', $data)) {
             $data['iam_account_id'] = UserHelper::currentAccount()->id;
         }
-                        
+
         try {
             $model = Tasks::create($data);
         } catch(\Exception $e) {
@@ -263,7 +263,7 @@ class AbstractTasksService
                 $data['iam_account_id']
             );
         }
-    
+
         Events::fire('updating:NextDeveloper\Agenda\Tasks', $model);
 
         try {

@@ -22,17 +22,17 @@ class TaskItemsQueryFilter extends AbstractQueryFilter
     {
         return $this->builder->where('google_id', 'like', '%' . $value . '%');
     }
-    
+
     public function title($value)
     {
         return $this->builder->where('title', 'like', '%' . $value . '%');
     }
-    
+
     public function notes($value)
     {
         return $this->builder->where('notes', 'like', '%' . $value . '%');
     }
-    
+
     public function status($value)
     {
         return $this->builder->where('status', 'like', '%' . $value . '%');

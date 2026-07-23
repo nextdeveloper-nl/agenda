@@ -25,7 +25,7 @@ use NextDeveloper\Commons\Exceptions\NotAllowedException;
  */
 class AbstractAllContactsService
 {
-    public static function get(AllContactsQueryFilter $filter = null, array $params = []) : Collection|LengthAwarePaginator
+    public static function get(?AllContactsQueryFilter $filter = null, array $params = []) : Collection|LengthAwarePaginator
     {
         $enablePaginate = array_key_exists('paginate', $params);
 
@@ -176,11 +176,11 @@ class AbstractAllContactsService
                 $data['iam_user_id']
             );
         }
-                    
+
         if(!array_key_exists('iam_user_id', $data)) {
             $data['iam_user_id']    = UserHelper::me()->id;
         }
-            
+
         try {
             $model = AllContacts::create($data);
         } catch(\Exception $e) {
@@ -234,7 +234,7 @@ class AbstractAllContactsService
                 $data['iam_user_id']
             );
         }
-    
+
         Events::fire('updating:NextDeveloper\Agenda\AllContacts', $model);
 
         try {

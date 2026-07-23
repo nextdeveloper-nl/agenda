@@ -17,17 +17,17 @@ class TasksQueryFilter extends AbstractQueryFilter
      * @var Builder
      */
     protected $builder;
-    
+
     public function name($value)
     {
         return $this->builder->where('name', 'like', '%' . $value . '%');
     }
-    
+
     public function description($value)
     {
         return $this->builder->where('description', 'like', '%' . $value . '%');
     }
-    
+
     public function color($value)
     {
         return $this->builder->where('color', 'like', '%' . $value . '%');
@@ -37,7 +37,7 @@ class TasksQueryFilter extends AbstractQueryFilter
     {
         return $this->builder->where('google_id', 'like', '%' . $value . '%');
     }
-    
+
     public function objectType($value)
     {
         return $this->builder->where('object_type', 'like', '%' . $value . '%');
