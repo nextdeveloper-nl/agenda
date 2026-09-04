@@ -38,6 +38,16 @@ use NextDeveloper\Commons\Database\Traits\Taggable;
  * @property string $meeting_link
  * @property $data
  * @property string $external_event_id
+ * @property string $rrule
+ * @property  $rrule_options
+ * @property string $cron_expression
+ * @property string $yearly_notification_cron
+ * @property string $frequency
+ * @property string $frequency_variant
+ * @property integer $repeat_interval
+ * @property integer $occurrence_count
+ * @property boolean $is_infinite
+ * @property boolean $is_repeat
  */
 class CalendarEvents extends Model
 {
@@ -75,6 +85,16 @@ class CalendarEvents extends Model
             'meeting_link',
             'data',
             'external_event_id',
+            'rrule',
+            'rrule_options',
+            'cron_expression',
+            'yearly_notification_cron',
+            'frequency',
+            'frequency_variant',
+            'repeat_interval',
+            'occurrence_count',
+            'is_infinite',
+            'is_repeat',
     ];
 
     /**
@@ -117,6 +137,16 @@ class CalendarEvents extends Model
     'meeting_link' => 'string',
     'data' => 'array',
     'external_event_id' => 'string',
+    'rrule' => 'string',
+    'rrule_options' => 'array',
+    'cron_expression' => 'string',
+    'yearly_notification_cron' => 'string',
+    'frequency' => 'string',
+    'frequency_variant' => 'string',
+    'repeat_interval' => 'integer',
+    'occurrence_count' => 'integer',
+    'is_infinite' => 'boolean',
+    'is_repeat' => 'boolean',
     ];
 
     /**
