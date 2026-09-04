@@ -121,7 +121,7 @@ class CalendarEvents extends Model
     'title' => 'string',
     'description' => 'string',
     'location' => 'string',
-    'guests' => 'array:integer',
+    'guests' => \NextDeveloper\Commons\Database\Casts\IntegerArray::class,
     'starts_at' => 'datetime',
     'ends_at' => 'datetime',
     'agenda_calendar_id' => 'integer',
