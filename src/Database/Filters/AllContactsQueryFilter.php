@@ -17,7 +17,7 @@ class AllContactsQueryFilter extends AbstractQueryFilter
      * @var Builder
      */
     protected $builder;
-    
+
     public function searchString($value)
     {
         return $this->builder->where('search_string', 'like', '%' . $value . '%');

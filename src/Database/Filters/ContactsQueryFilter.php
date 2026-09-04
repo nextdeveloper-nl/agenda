@@ -17,52 +17,52 @@ class ContactsQueryFilter extends AbstractQueryFilter
      * @var Builder
      */
     protected $builder;
-    
+
     public function name($value)
     {
         return $this->builder->where('name', 'like', '%' . $value . '%');
     }
-    
+
     public function surname($value)
     {
         return $this->builder->where('surname', 'like', '%' . $value . '%');
     }
-    
+
     public function email($value)
     {
         return $this->builder->where('email', 'like', '%' . $value . '%');
     }
-    
+
     public function homePhone($value)
     {
         return $this->builder->where('home_phone', 'like', '%' . $value . '%');
     }
-    
+
     public function cellPhone($value)
     {
         return $this->builder->where('cell_phone', 'like', '%' . $value . '%');
     }
-    
+
     public function faxNumber($value)
     {
         return $this->builder->where('fax_number', 'like', '%' . $value . '%');
     }
-    
+
     public function emailWork($value)
     {
         return $this->builder->where('email_work', 'like', '%' . $value . '%');
     }
-    
+
     public function website($value)
     {
         return $this->builder->where('website', 'like', '%' . $value . '%');
     }
-    
+
     public function notes($value)
     {
         return $this->builder->where('notes', 'like', '%' . $value . '%');
     }
-    
+
     public function description($value)
     {
         return $this->builder->where('description', 'like', '%' . $value . '%');

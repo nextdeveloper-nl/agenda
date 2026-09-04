@@ -17,7 +17,7 @@ class TaskAssigneesQueryFilter extends AbstractQueryFilter
      * @var Builder
      */
     protected $builder;
-    
+
     public function comment($value)
     {
         return $this->builder->where('comment', 'like', '%' . $value . '%');

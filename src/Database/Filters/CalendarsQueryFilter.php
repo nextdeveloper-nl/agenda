@@ -37,42 +37,42 @@ class CalendarsQueryFilter extends AbstractQueryFilter
      * @var Builder
      */
     protected $builder;
-    
+
     public function name($value)
     {
         return $this->builder->where('name', 'like', '%' . $value . '%');
     }
-    
+
     public function description($value)
     {
         return $this->builder->where('description', 'like', '%' . $value . '%');
     }
-    
+
     public function objectType($value)
     {
         return $this->builder->where('object_type', 'like', '%' . $value . '%');
     }
-    
+
     public function timezone($value)
     {
         return $this->builder->where('timezone', 'like', '%' . $value . '%');
     }
-    
+
     public function color($value)
     {
         return $this->builder->where('color', 'like', '%' . $value . '%');
     }
-    
+
     public function calendarKey($value)
     {
         return $this->builder->where('calendar_key', 'like', '%' . $value . '%');
     }
-    
+
     public function source($value)
     {
         return $this->builder->where('source', 'like', '%' . $value . '%');
     }
-    
+
     public function lastSyncStatus($value)
     {
         return $this->builder->where('last_sync_status', 'like', '%' . $value . '%');

@@ -56,7 +56,7 @@ class AbstractCalendarSubscriptionsTransformer extends AbstractTransformer
     {
                                                 $agendaCalendarId = \NextDeveloper\Agenda\Database\Models\Calendars::where('id', $model->agenda_calendar_id)->first();
                                                             $iamUserId = \NextDeveloper\IAM\Database\Models\Users::where('id', $model->iam_user_id)->first();
-                        
+
         return $this->buildPayload(
             [
             'id'  =>  $model->id,
