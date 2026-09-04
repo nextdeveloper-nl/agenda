@@ -177,13 +177,74 @@ class CalendarEventsQueryFilter extends AbstractQueryFilter
         }
     }
 
-    public function externalEventId($value)
-    {
-            $externalEvent = \NextDeveloper\\Database\Models\ExternalEvents::where('uuid', $value)->first();
 
-        if($externalEvent) {
-            return $this->builder->where('external_event_id', '=', $externalEvent->id);
+    public function rrule($value)
+    {
+        return $this->builder->where('rrule', 'like', '%' . $value . '%');
+    }
+
+    public function cronExpression($value)
+    {
+        return $this->builder->where('cron_expression', 'like', '%' . $value . '%');
+    }
+
+    public function yearlyNotificationCron($value)
+    {
+        return $this->builder->where('yearly_notification_cron', 'like', '%' . $value . '%');
+    }
+
+    public function frequency($value)
+    {
+        return $this->builder->where('frequency', 'like', '%' . $value . '%');
+    }
+
+    public function frequencyVariant($value)
+    {
+        return $this->builder->where('frequency_variant', 'like', '%' . $value . '%');
+    }
+
+    public function repeatInterval($value)
+    {
+        $operator = substr($value, 0, 1);
+
+        if ($operator != '<' || $operator != '>') {
+            $operator = '=';
+        } else {
+            $value = substr($value, 1);
         }
+
+        return $this->builder->where('repeat_interval', $operator, $value);
+    }
+
+    public function occurrenceCount($value)
+    {
+        $operator = substr($value, 0, 1);
+
+        if ($operator != '<' || $operator != '>') {
+            $operator = '=';
+        } else {
+            $value = substr($value, 1);
+        }
+
+        return $this->builder->where('occurrence_count', $operator, $value);
+    }
+
+    public function isInfinite($value)
+    {
+        if(!is_bool($value)) {
+            $value = false;
+        }
+
+        return $this->builder->where('is_infinite', $value);
+    }
+
+    public function isRepeat($value)
+    {
+        if(!is_bool($value)) {
+            $value = false;
+        }
+
+        return $this->builder->where('is_repeat', $value);
     }
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE

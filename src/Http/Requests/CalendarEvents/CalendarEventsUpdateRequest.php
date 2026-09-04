@@ -29,6 +29,16 @@ class CalendarEventsUpdateRequest extends AbstractFormRequest
         'meeting_link' => 'nullable|string',
         'data' => 'nullable',
         'external_event_id' => 'nullable|string|exists:external_events,uuid|uuid',
+        'rrule' => 'nullable|string',
+        'rrule_options' => 'nullable',
+        'cron_expression' => 'nullable|string',
+        'yearly_notification_cron' => 'nullable|string',
+        'frequency' => 'nullable|string|in:yearly,monthly,weekly,daily,hourly',
+        'frequency_variant' => 'nullable|string',
+        'repeat_interval' => 'nullable|integer',
+        'occurrence_count' => 'nullable|integer',
+        'is_infinite' => 'boolean',
+        'is_repeat' => 'boolean',
         ];
     }
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE

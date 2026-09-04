@@ -57,7 +57,6 @@ class AbstractCalendarEventsTransformer extends AbstractTransformer
                                                 $iamUserId = \NextDeveloper\IAM\Database\Models\Users::where('id', $model->iam_user_id)->first();
                                                             $iamAccountId = \NextDeveloper\IAM\Database\Models\Accounts::where('id', $model->iam_account_id)->first();
                                                             $agendaCalendarId = \NextDeveloper\Agenda\Database\Models\Calendars::where('id', $model->agenda_calendar_id)->first();
-                                                            $externalEventId = \NextDeveloper\\Database\Models\ExternalEvents::where('id', $model->external_event_id)->first();
                         
         return $this->buildPayload(
             [
@@ -82,7 +81,17 @@ class AbstractCalendarEventsTransformer extends AbstractTransformer
             'status'  =>  $model->status,
             'meeting_link'  =>  $model->meeting_link,
             'data'  =>  $model->data,
-            'external_event_id'  =>  $externalEventId ? $externalEventId->uuid : null,
+            'external_event_id'  =>  $model->external_event_id,
+            'rrule'  =>  $model->rrule,
+            'rrule_options'  =>  $model->rrule_options,
+            'cron_expression'  =>  $model->cron_expression,
+            'yearly_notification_cron'  =>  $model->yearly_notification_cron,
+            'frequency'  =>  $model->frequency,
+            'frequency_variant'  =>  $model->frequency_variant,
+            'repeat_interval'  =>  $model->repeat_interval,
+            'occurrence_count'  =>  $model->occurrence_count,
+            'is_infinite'  =>  $model->is_infinite,
+            'is_repeat'  =>  $model->is_repeat,
             ]
         );
     }
