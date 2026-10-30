@@ -26,7 +26,7 @@ class CalendarEventsUpdateRequest extends AbstractFormRequest
         'timezone' => 'nullable|string',
         'is_all_day' => 'boolean',
         'status' => 'nullable|string',
-        'meeting_link' => 'nullable|string',
+        'meeting_link' => ['nullable', 'string', 'regex:/^https?:\/\//i'], // http(s) only, no javascript:/data: links
         'data' => 'nullable',
         'external_event_id' => 'nullable|string|exists:external_events,uuid|uuid',
         'rrule' => 'nullable|string',
