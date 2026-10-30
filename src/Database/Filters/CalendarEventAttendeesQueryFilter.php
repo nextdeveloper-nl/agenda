@@ -100,4 +100,9 @@ class CalendarEventAttendeesQueryFilter extends AbstractQueryFilter
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
 
+    public function email($value)
+    {
+        return $this->builder->whereRaw('lower(email) = ?', [strtolower(trim($value))]);
+    }
+
 }

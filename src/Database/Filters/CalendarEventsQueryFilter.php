@@ -249,4 +249,17 @@ class CalendarEventsQueryFilter extends AbstractQueryFilter
 
     // EDIT AFTER HERE - WARNING: ABOVE THIS LINE MAY BE REGENERATED AND YOU MAY LOSE CODE
 
+    /**
+     * Events that have an attendee with the given email (case-insensitive). Used for "meetings with this person".
+     * Comma separated values match any of them.
+     */
+    public function attendeeEmail($value)
+    {
+        $emails = array_filter(array_map(fn ($email) => strtolower(trim($email)), explode(',', $value)));
+
+        return $this->builder->whereIn('id', \NextDeveloper\Agenda\Database\Models\CalendarEventAttendees::withoutGlobalScopes()
+            ->whereIn(\Illuminate\Support\Facades\DB::raw('lower(email)'), $emails)
+            ->select('agenda_calendar_event_id'));
+    }
+
 }
