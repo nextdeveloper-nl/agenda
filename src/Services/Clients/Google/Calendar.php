@@ -69,7 +69,7 @@ class Calendar extends Init
                 'timezone'                  => $item->getStart()?->getTimeZone(),
                 'is_all_day'                => (bool)$item->getStart()?->getDate(),
                 'status'                    => $item->getStatus(),
-                'meeting_link'              => $item->getHangoutLink(),
+                'meeting_link'              => $this->safeLink($item->getHangoutLink()),
                 'data'                      => json_encode($item),
                 'attendees'                 => []
             ];
@@ -92,5 +92,18 @@ class Calendar extends Init
         }
 
         return $events;
+    }
+
+    /**
+     * Event data comes from Google and can be set by whoever invited the user, so only http(s) links are stored;
+     * anything else (javascript:, data:, ...) is dropped to null.
+     */
+    private function safeLink(?string $link): ?string
+    {
+        if (!$link || !in_array(strtolower((string) parse_url($link, PHP_URL_SCHEME)), ['http', 'https'], true)) {
+            return null;
+        }
+
+        return $link;
     }
 }
