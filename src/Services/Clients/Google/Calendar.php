@@ -48,8 +48,18 @@ class Calendar extends Init
      */
     public function getEvents(string $calendarId, array $params = []): array
     {
-        $lists = $this->service->events->listEvents($calendarId, $params);
-        $items = $lists->getItems();
+        // Follow nextPageToken so a long window (backfill) is not cut off after the first page
+        $items = [];
+        do {
+            $lists = $this->service->events->listEvents($calendarId, $params);
+            $items = array_merge($items, $lists->getItems());
+            $pageToken = $lists->getNextPageToken();
+
+            if ($pageToken) {
+                $params['pageToken'] = $pageToken;
+            }
+        } while ($pageToken);
+
         $events = [];
 
         foreach ($items as $item) {

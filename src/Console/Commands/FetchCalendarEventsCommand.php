@@ -153,8 +153,10 @@ class FetchCalendarEventsCommand extends Command
             // Get calendar start date for syncing
             $startDateTime = $calendar->sync_start_date ? Carbon::parse($calendar->sync_start_date) : now()->subMonth();
 
-            // If calendar was last synced after the start date, use the last sync date
-            if ($startDateTime->lt($calendar->last_sync_at)) {
+            // If calendar was last synced after the start date, use the last sync date.
+            // Only when a sync has happened: Carbon::lt(null) compares against "now", which made the first sync
+            // start from now and skip the whole past window.
+            if ($calendar->last_sync_at && $startDateTime->lt($calendar->last_sync_at)) {
                 $startDateTime = $calendar->last_sync_at;
             }
 

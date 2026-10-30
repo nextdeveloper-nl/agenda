@@ -149,7 +149,7 @@ class FetchCalendarsCommand extends Command
             }
 
             foreach ($calendars as $calendarData) {
-                $this->updateOrCreateCalendar($externalService->iam_account_id, $calendarData);
+                $this->updateOrCreateCalendar($externalService->iam_account_id, $calendarData, $externalService->configuration['calendar_sync_months_back'] ?? null);
             }
 
             StateHelper::setState(
@@ -196,7 +196,7 @@ class FetchCalendarsCommand extends Command
      * @throws NotAllowedException
      * @throws Exception
      */
-    private function updateOrCreateCalendar(string $iamAccountId, array $calendarData): void
+    private function updateOrCreateCalendar(string $iamAccountId, array $calendarData, ?int $monthsBack = null): void
     {
         $calendarData = array_merge($calendarData, [
             'source'        => 'Google',
@@ -210,6 +210,11 @@ class FetchCalendarsCommand extends Command
             ->first();
 
         if (!$calendar) {
+            // New calendars start syncing from the window the user chose (calendar_sync_months_back), if any
+            if ($monthsBack !== null) {
+                $calendarData['sync_start_date'] = now()->subMonths($monthsBack)->toDateString();
+            }
+
             CalendarsService::create($calendarData);
         } else {
             CalendarsService::update($calendar->uuid, $calendarData);
