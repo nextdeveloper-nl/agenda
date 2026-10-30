@@ -19,6 +19,7 @@ use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
 use NextDeveloper\Agenda\Services\ContactsService;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
 use NextDeveloper\Commons\Exceptions\NotAllowedException;
+use NextDeveloper\Commons\Helpers\GoogleWorkspaceHelper;
 use NextDeveloper\Commons\Helpers\StateHelper;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
@@ -36,7 +37,7 @@ class FetchCalendarEventsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'agenda:fetch-calendar-events';
+    protected $signature = 'agenda:fetch-calendar-events {--user= : Specific user ID to fetch events for}';
 
     /**
      * The console command description.
@@ -70,8 +71,14 @@ class FetchCalendarEventsCommand extends Command
     {
         $calendars = Calendars::withoutGlobalScopes()
             ->where('source', 'Google')
-            ->where('sync_enabled', true)
-            ->get();
+            ->where('sync_enabled', true);
+
+        // Apply user filter if specified (used by the on-demand Workspace sync)
+        if ($userId = $this->option('user')) {
+            $calendars->where('iam_user_id', $userId);
+        }
+
+        $calendars = $calendars->get();
 
         if ($calendars->isEmpty()) {
             $this->warn('No calendars found');
@@ -104,11 +111,15 @@ class FetchCalendarEventsCommand extends Command
     private function processCalendarEvents(Calendars $calendar): void
     {
         // Get user's login mechanism
+        // Workspace connections count only when they were granted calendar.readonly.
         $externalService = ExternalServices::query()
             ->withoutGlobalScope(AuthorizationScope::class)
             ->where('iam_user_id', $calendar->iam_user_id)
-            ->whereIn('code', self::SERVICE_IDS)
-            ->first();
+            ->whereIn('code', array_merge(self::SERVICE_IDS, [GoogleWorkspaceHelper::CODE]))
+            ->where('is_alive', true)
+            ->get()
+            ->first(fn (ExternalServices $service) => $service->code !== GoogleWorkspaceHelper::CODE
+                || GoogleWorkspaceHelper::hasScope($service, GoogleWorkspaceHelper::SCOPE_CALENDAR_READONLY));
 
         if (!$externalService) {
             Log::info('[Agenda::Console/Command::Skipping calendar - no valid service found]', [
@@ -122,10 +133,21 @@ class FetchCalendarEventsCommand extends Command
         UserHelper::setCurrentAccountById($externalService->iam_account_id);
 
         try {
-            $service = new Calendar($externalService->token);
+            if ($externalService->code === GoogleWorkspaceHelper::CODE) {
+                // Workspace tokens are refreshed and persisted by the helper (the client-side refresh is not saved).
+                $token = GoogleWorkspaceHelper::freshEncryptedToken($externalService);
 
-            if ($service->isTokenExpired()) {
-                $service->refreshToken($externalService->refresh_token);
+                if (!$token) {
+                    throw new Exception('Unable to refresh the Google Workspace token');
+                }
+
+                $service = new Calendar($token);
+            } else {
+                $service = new Calendar($externalService->token);
+
+                if ($service->isTokenExpired()) {
+                    $service->refreshToken($externalService->refresh_token);
+                }
             }
 
             // Get calendar start date for syncing

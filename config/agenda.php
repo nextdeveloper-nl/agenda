@@ -11,8 +11,7 @@ return [
 
     'google-scopes' => [
         'calendar' => [
-            'https://www.googleapis.com/auth/calendar',
-            'https://www.googleapis.com/auth/calendar.events',
+            // Read-only, aligned with the scopes declared in the Google Cloud console.
             'https://www.googleapis.com/auth/calendar.readonly',
         ],
     ],

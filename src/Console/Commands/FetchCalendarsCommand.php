@@ -11,6 +11,7 @@ use NextDeveloper\Agenda\Services\CalendarsService;
 use NextDeveloper\Agenda\Services\Clients\Google\Calendar;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
 use NextDeveloper\Commons\Exceptions\NotAllowedException;
+use NextDeveloper\Commons\Helpers\GoogleWorkspaceHelper;
 use NextDeveloper\Commons\Helpers\StateHelper;
 use NextDeveloper\IAM\Database\Models\LoginMechanisms;
 use NextDeveloper\IAM\Database\Scopes\AuthorizationScope;
@@ -60,14 +61,21 @@ class FetchCalendarsCommand extends Command
     {
         $query = ExternalServices::query()
             ->withoutGlobalScopes()
-            ->whereIn('code', self::SERVICE_IDS);
+            ->whereIn('code', array_merge(self::SERVICE_IDS, [GoogleWorkspaceHelper::CODE]))
+            ->where('is_alive', true)
+            ->whereNull('deleted_at');
 
         // Apply user filter if specified
         if ($userId = $this->option('user')) {
             $query->where('iam_user_id', $userId);
         }
 
-        $services = $query->get();
+        // Also pick up Workspace connections (code 'google_workspace') that were granted calendar.readonly.
+        // google_workspace rows are filtered by granted scope; legacy google_calendar rows are kept as they were.
+        $services = $query->get()->filter(function (ExternalServices $service) {
+            return $service->code !== GoogleWorkspaceHelper::CODE
+                || GoogleWorkspaceHelper::hasScope($service, GoogleWorkspaceHelper::SCOPE_CALENDAR_READONLY);
+        })->values();
 
         if ($services->isEmpty()) {
             $this->warn('No users found with valid Google login mechanisms');
@@ -103,10 +111,27 @@ class FetchCalendarsCommand extends Command
             UserHelper::setUserById($externalService->iam_user_id);
             UserHelper::setCurrentAccountById($externalService->iam_account_id);
 
-            $service = new Calendar($externalService->token);
+            if ($externalService->code === GoogleWorkspaceHelper::CODE) {
+                // Workspace tokens are refreshed and persisted by the helper (the client-side refresh is not saved).
+                $token = GoogleWorkspaceHelper::freshEncryptedToken($externalService);
 
-            if ($service->isTokenExpired()) {
-                $service->refreshToken($externalService->refresh_token);
+                if (!$token) {
+                    StateHelper::setState(
+                        $externalService,
+                        'connection',
+                        'Unable to refresh the Google token. Please reconnect your account.',
+                        StateHelper::STATE_ERROR
+                    );
+                    return;
+                }
+
+                $service = new Calendar($token);
+            } else {
+                $service = new Calendar($externalService->token);
+
+                if ($service->isTokenExpired()) {
+                    $service->refreshToken($externalService->refresh_token);
+                }
             }
 
             $calendars = $service->getCalendars();
