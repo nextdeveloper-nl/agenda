@@ -159,6 +159,11 @@ class FetchCalendarsCommand extends Command
                 StateHelper::STATE_SUCCESS
             );
         } catch (Exception $e) {
+            // Google rejected the token (401) or access (403): flag the connection and email the owner once;
+            // other errors are treated as transient
+            if (in_array($e->getCode(), [401, 403], true) || preg_match('/"code":\s*(401|403)/', $e->getMessage())) {
+                GoogleWorkspaceHelper::flagUnauthorized($externalService, 'calendar');
+            }
 
             if ($e->getMessage()) {
                 $error = json_decode($e->getMessage());

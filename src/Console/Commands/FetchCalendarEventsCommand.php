@@ -212,8 +212,9 @@ class FetchCalendarEventsCommand extends Command
 
         } catch (Exception $e) {
             // Google rejected the token (HTTP 401): flag the connection so the panel shows 'reconnect'
-            if ($e->getCode() === 401 || str_contains($e->getMessage(), '"code": 401')) {
-                GoogleWorkspaceHelper::flagUnauthorized($externalService);
+            // (401 invalid token, 403 access/scope no longer granted); other errors are treated as transient
+            if (in_array($e->getCode(), [401, 403], true) || preg_match('/"code":\s*(401|403)/', $e->getMessage())) {
+                GoogleWorkspaceHelper::flagUnauthorized($externalService, 'calendar');
             }
 
             Log::error('[Agenda::Console/Command::Events fetch failed]', [
