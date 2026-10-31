@@ -118,8 +118,11 @@ class FetchCalendarEventsCommand extends Command
             ->whereIn('code', array_merge(self::SERVICE_IDS, [GoogleWorkspaceHelper::CODE]))
             ->where('is_alive', true)
             ->get()
-            ->first(fn (ExternalServices $service) => $service->code !== GoogleWorkspaceHelper::CODE
-                || GoogleWorkspaceHelper::hasScope($service, GoogleWorkspaceHelper::SCOPE_CALENDAR_READONLY));
+            ->filter(fn (ExternalServices $service) => $service->code !== GoogleWorkspaceHelper::CODE
+                || GoogleWorkspaceHelper::hasScope($service, GoogleWorkspaceHelper::SCOPE_CALENDAR_READONLY))
+            // Workspace connections first: the legacy google_calendar rows hold old tokens that Google often rejects
+            ->sortBy(fn (ExternalServices $service) => $service->code === GoogleWorkspaceHelper::CODE ? 0 : 1)
+            ->first();
 
         if (!$externalService) {
             Log::info('[Agenda::Console/Command::Skipping calendar - no valid service found]', [
@@ -180,6 +183,8 @@ class FetchCalendarEventsCommand extends Command
                     StateHelper::STATE_WARNING
                 );
 
+                GoogleWorkspaceHelper::clearUnauthorized($externalService);
+
                 return; // Successfully processed, but no events found
             }
 
@@ -200,9 +205,17 @@ class FetchCalendarEventsCommand extends Command
                 StateHelper::STATE_SUCCESS
             );
 
+            // The token worked, so a previous 401 flag no longer applies
+            GoogleWorkspaceHelper::clearUnauthorized($externalService);
+
             return;
 
         } catch (Exception $e) {
+            // Google rejected the token (HTTP 401): flag the connection so the panel shows 'reconnect'
+            if ($e->getCode() === 401 || str_contains($e->getMessage(), '"code": 401')) {
+                GoogleWorkspaceHelper::flagUnauthorized($externalService);
+            }
+
             Log::error('[Agenda::Console/Command::Events fetch failed]', [
                 'agenda_calendar_id' => $calendar->id,
                 'iam_user_id' => $calendar->iam_user_id,
