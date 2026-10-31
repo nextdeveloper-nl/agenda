@@ -72,9 +72,18 @@ class GoogleContactsImportService
 
                 if (!$response->successful()) {
                     // the status is the exception code so the catch below can tell an auth failure from a transient one
+                    // A 403 only means "reconnect" when the token lacks the scope. A disabled People API or an exhausted
+                    // quota is a problem of our Google project, which reconnecting cannot fix, so it must not flag
+                    // the user's connection (the exception code stays 0 and the error is only recorded).
+                    $code = $response->status();
+
+                    if ($code === 403 && $response->json('error.details.0.reason') !== 'ACCESS_TOKEN_SCOPE_INSUFFICIENT') {
+                        $code = 0;
+                    }
+
                     throw new \RuntimeException(
                         $response->json('error.message') ?? ('People API error ' . $response->status()),
-                        $response->status()
+                        $code
                     );
                 }
 

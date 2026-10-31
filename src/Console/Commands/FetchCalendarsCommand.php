@@ -161,7 +161,9 @@ class FetchCalendarsCommand extends Command
         } catch (Exception $e) {
             // Google rejected the token (401) or access (403): flag the connection and email the owner once;
             // other errors are treated as transient
-            if (in_array($e->getCode(), [401, 403], true) || preg_match('/"code":\s*(401|403)/', $e->getMessage())) {
+            if ((in_array($e->getCode(), [401, 403], true) || preg_match('/"code":\s*(401|403)/', $e->getMessage()))
+            // not when our own Google project is the problem (API disabled, quota): reconnecting cannot fix that
+            && !preg_match('/accessNotConfigured|SERVICE_DISABLED|has not been used|rateLimitExceeded|quotaExceeded|userRateLimitExceeded/i', $e->getMessage())) {
                 GoogleWorkspaceHelper::flagUnauthorized($externalService, 'calendar');
             }
 
