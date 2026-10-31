@@ -27,6 +27,14 @@ use NextDeveloper\IAM\Helpers\UserHelper;
 
 class FetchCalendarEventsCommand extends Command
 {
+    use \NextDeveloper\Agenda\Console\Commands\Concerns\RecordsCalendarSync;
+
+    /** @var array<string, ExternalServices> connections used during this run, by uuid */
+    private array $usedServices = [];
+
+    /** @var array<string, string> first error per connection uuid during this run */
+    private array $serviceErrors = [];
+
     /**
      * The login mechanism for Google
      */
@@ -97,6 +105,11 @@ class FetchCalendarEventsCommand extends Command
         $progressBar->finish();
         $this->newLine();
 
+        // One result per connection (an error of any of its calendars makes the sync failed)
+        foreach ($this->usedServices as $uuid => $usedService) {
+            $this->recordCalendarSync($usedService, 'events', $this->serviceErrors[$uuid] ?? null);
+        }
+
         Log::info('[Agenda::Console/Command::Calendar events fetch completed]');
 
     }
@@ -134,6 +147,8 @@ class FetchCalendarEventsCommand extends Command
 
         UserHelper::setUserById($externalService->iam_user_id);
         UserHelper::setCurrentAccountById($externalService->iam_account_id);
+
+        $this->usedServices[$externalService->uuid] = $externalService;
 
         try {
             if ($externalService->code === GoogleWorkspaceHelper::CODE) {
@@ -211,6 +226,9 @@ class FetchCalendarEventsCommand extends Command
             return;
 
         } catch (Exception $e) {
+            // Remembered for the connection's calendar_sync (Google's own message when it gave one)
+            $this->serviceErrors[$externalService->uuid] ??= (json_decode($e->getMessage())->error->message ?? $e->getMessage());
+
             // Google rejected the token (HTTP 401): flag the connection so the panel shows 'reconnect'
             // (401 invalid token, 403 access/scope no longer granted); other errors are treated as transient
             if ((in_array($e->getCode(), [401, 403], true) || preg_match('/"code":\s*(401|403)/', $e->getMessage()))

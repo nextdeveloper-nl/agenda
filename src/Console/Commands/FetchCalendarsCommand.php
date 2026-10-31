@@ -19,6 +19,8 @@ use NextDeveloper\IAM\Helpers\UserHelper;
 
 class FetchCalendarsCommand extends Command
 {
+    use \NextDeveloper\Agenda\Console\Commands\Concerns\RecordsCalendarSync;
+
 
     private const SERVICE_IDS = ['google_calendar'];
 
@@ -122,6 +124,7 @@ class FetchCalendarsCommand extends Command
                         'Unable to refresh the Google token. Please reconnect your account.',
                         StateHelper::STATE_ERROR
                     );
+                    $this->recordCalendarSync($externalService, 'calendars', 'Unable to refresh the Google token. Please reconnect your account.');
                     return;
                 }
 
@@ -144,6 +147,7 @@ class FetchCalendarsCommand extends Command
                     'No calendars found, please create a calendar first',
                     StateHelper::STATE_ERROR
                 );
+                $this->recordCalendarSync($externalService, 'calendars', 'No calendars found, please create a calendar first');
 
                 return;
             }
@@ -158,7 +162,11 @@ class FetchCalendarsCommand extends Command
                 'Calendars fetched successfully',
                 StateHelper::STATE_SUCCESS
             );
+            $this->recordCalendarSync($externalService, 'calendars', null);
         } catch (Exception $e) {
+            // The real failure goes to the connection's calendar_sync so the panel shows it (Google's own message when given)
+            $this->recordCalendarSync($externalService, 'calendars', json_decode($e->getMessage())->error->message ?? $e->getMessage());
+
             // Google rejected the token (401) or access (403): flag the connection and email the owner once;
             // other errors are treated as transient
             if ((in_array($e->getCode(), [401, 403], true) || preg_match('/"code":\s*(401|403)/', $e->getMessage()))
