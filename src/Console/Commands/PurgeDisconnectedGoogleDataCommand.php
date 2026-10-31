@@ -40,8 +40,9 @@ class PurgeDisconnectedGoogleDataCommand extends Command
             });
 
         foreach ($services as $service) {
+            // Any live Google connection of the user (Workspace or the legacy google_calendar one) keeps the data
             $stillConnected = ExternalServices::withoutGlobalScopes()
-                ->where('code', GoogleWorkspaceHelper::CODE)
+                ->whereIn('code', [GoogleWorkspaceHelper::CODE, 'google_calendar'])
                 ->where('iam_user_id', $service->iam_user_id)
                 ->where('is_alive', true)
                 ->whereNull('deleted_at')
@@ -51,7 +52,7 @@ class PurgeDisconnectedGoogleDataCommand extends Command
                 continue;
             }
 
-            $result = GoogleDataRetentionService::purgeUser((int) $service->iam_user_id, $includeContacts, $dryRun);
+            $result = GoogleDataRetentionService::purgeUser((int) $service->iam_user_id, $includeContacts, $dryRun, (int) $service->iam_account_id);
 
             if (!$dryRun) {
                 // Marks this disconnect as handled so the job does not run again for it

@@ -227,7 +227,7 @@ class FetchCalendarEventsCommand extends Command
 
         } catch (Exception $e) {
             // Remembered for the connection's calendar_sync (Google's own message when it gave one)
-            $this->serviceErrors[$externalService->uuid] ??= (json_decode($e->getMessage())->error->message ?? $e->getMessage());
+            $this->serviceErrors[$externalService->uuid] ??= $e->getMessage();
 
             // Google rejected the token (HTTP 401): flag the connection so the panel shows 'reconnect'
             // (401 invalid token, 403 access/scope no longer granted); other errors are treated as transient

@@ -165,7 +165,7 @@ class FetchCalendarsCommand extends Command
             $this->recordCalendarSync($externalService, 'calendars', null);
         } catch (Exception $e) {
             // The real failure goes to the connection's calendar_sync so the panel shows it (Google's own message when given)
-            $this->recordCalendarSync($externalService, 'calendars', json_decode($e->getMessage())->error->message ?? $e->getMessage());
+            $this->recordCalendarSync($externalService, 'calendars', $e->getMessage());
 
             // Google rejected the token (401) or access (403): flag the connection and email the owner once;
             // other errors are treated as transient

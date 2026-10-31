@@ -39,18 +39,19 @@ class GoogleDataRetentionService
 
     /**
      * Deletes everything synced from Google for one user: all events with their attendees and, optionally, the
-     * imported contacts (the "Google Contacts" address book and its contacts).
+     * imported contacts (the "Google Contacts" address book and its contacts). With $accountId (the scheduled
+     * purge after a disconnect) only the data of that account is deleted.
      *
      * @return array{events: int, attendees: int, contacts: int}
      */
-    public static function purgeUser(int $userId, bool $includeContacts, bool $dryRun = false): array
+    public static function purgeUser(int $userId, bool $includeContacts, bool $dryRun = false, ?int $accountId = null): array
     {
         $events = CalendarEvents::withoutGlobalScopes()
-            ->whereIn('agenda_calendar_id', self::googleCalendarIds($userId));
+            ->whereIn('agenda_calendar_id', self::googleCalendarIds($userId, $accountId));
 
         $result = self::deleteEvents($events, $dryRun, 'user ' . $userId);
 
-        $result['contacts'] = $includeContacts ? self::purgeContacts($userId, $dryRun) : 0;
+        $result['contacts'] = $includeContacts ? self::purgeContacts($userId, $dryRun, $accountId) : 0;
 
         Log::info('[Agenda::GoogleDataRetention] User data deleted', ['iam_user_id' => $userId, 'dry_run' => $dryRun] + $result);
 
@@ -60,10 +61,11 @@ class GoogleDataRetentionService
     /**
      * Deletes the user's imported Google contacts and the address book they live in.
      */
-    private static function purgeContacts(int $userId, bool $dryRun): int
+    private static function purgeContacts(int $userId, bool $dryRun, ?int $accountId = null): int
     {
         $bookIds = AddressBooks::withoutGlobalScopes()
             ->where('iam_user_id', $userId)
+            ->when($accountId, fn ($query) => $query->where('iam_account_id', $accountId))
             ->where('name', GoogleContactsImportService::ADDRESS_BOOK_NAME)
             ->whereRaw('? = ANY(tags)', [GoogleContactsImportService::SOURCE_TAG])
             ->pluck('id');
@@ -74,6 +76,7 @@ class GoogleDataRetentionService
 
         $contacts = Contacts::withoutGlobalScopes()
             ->where('iam_user_id', $userId)
+            ->when($accountId, fn ($query) => $query->where('iam_account_id', $accountId))
             ->whereIn('agenda_address_book_id', $bookIds);
 
         $count = (clone $contacts)->withTrashed()->count();
@@ -89,12 +92,16 @@ class GoogleDataRetentionService
     /**
      * Ids of the Google calendars (of one user, or of everybody).
      */
-    private static function googleCalendarIds(?int $userId = null)
+    private static function googleCalendarIds(?int $userId = null, ?int $accountId = null)
     {
         $calendars = Calendars::withoutGlobalScopes()->withTrashed()->where('source', 'Google');
 
         if ($userId) {
             $calendars->where('iam_user_id', $userId);
+        }
+
+        if ($accountId) {
+            $calendars->where('iam_account_id', $accountId);
         }
 
         return $calendars->select('id');

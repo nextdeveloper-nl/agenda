@@ -13,6 +13,28 @@ use NextDeveloper\Commons\Helpers\GoogleWorkspaceHelper;
 trait RecordsCalendarSync
 {
     /**
+     * The only error text that reaches the panel: Google's own error.message (when the exception is a Google API
+     * error) or one of our fixed messages. Anything else (SQL, paths, internals) becomes a generic text; the raw
+     * message stays in the server log.
+     */
+    protected function publicSyncError(string $message): string
+    {
+        $google = json_decode($message);
+
+        if (is_object($google) && is_string($google->error->message ?? null)) {
+            return $google->error->message;
+        }
+
+        foreach (['Unable to refresh the Google', 'No calendars found'] as $known) {
+            if (str_starts_with($message, $known)) {
+                return $message;
+            }
+        }
+
+        return 'Sync failed, please retry';
+    }
+
+    /**
      * @param string      $part  'calendars' or 'events'
      * @param string|null $error null when this part succeeded
      */
@@ -21,7 +43,7 @@ trait RecordsCalendarSync
         $current = $service->fresh()->configuration['calendar_sync'] ?? [];
         $parts   = $current['parts'] ?? [];
 
-        $parts[$part] = $error;
+        $parts[$part] = $error === null ? null : $this->publicSyncError($error);
 
         $firstError = collect($parts)->filter()->first();
 
