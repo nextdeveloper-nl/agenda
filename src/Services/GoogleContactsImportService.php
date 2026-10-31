@@ -43,9 +43,16 @@ class GoogleContactsImportService
                 throw new \RuntimeException('contacts.readonly scope was not granted. Please reconnect your Google account.');
             }
 
-            // Everything below is created as the connection owner, so the contacts belong to that user only
+            // Everything below is created as the connection owner, so the contacts belong to that user only.
+            // The previous identity is restored in the finally block, and the switch is verified before writing.
+            [$previousUserId, $previousAccountId] = self::currentIdentity();
+
             UserHelper::setUserById($service->iam_user_id);
             UserHelper::setCurrentAccountById($service->iam_account_id);
+
+            if (UserHelper::me()?->id !== $service->iam_user_id || UserHelper::currentAccount()?->id !== $service->iam_account_id) {
+                throw new \RuntimeException('Could not switch to the owner of the Google connection');
+            }
 
             $token = GoogleWorkspaceHelper::freshAccessToken($service);
 
@@ -92,11 +99,36 @@ class GoogleContactsImportService
             ]);
         }
 
-        $result['last_synced_at'] = now()->toISOString();
+        finally {
+            $result['last_synced_at'] = now()->toISOString();
 
-        GoogleWorkspaceHelper::recordSync($service, 'contacts_sync', $result);
+            // Recorded while still acting as the connection owner, then the previous identity is restored
+            GoogleWorkspaceHelper::recordSync($service, 'contacts_sync', $result);
+
+            if (isset($previousUserId) && $previousUserId) {
+                UserHelper::setUserById($previousUserId);
+            }
+
+            if (isset($previousAccountId) && $previousAccountId) {
+                UserHelper::setCurrentAccountById($previousAccountId);
+            }
+        }
 
         return $result;
+    }
+
+    /**
+     * Id of the user and account the process currently acts as (null when none could be resolved, e.g. console).
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private static function currentIdentity(): array
+    {
+        try {
+            return [UserHelper::me()?->id, UserHelper::currentAccount()?->id];
+        } catch (\Throwable) {
+            return [null, null];
+        }
     }
 
     /**
@@ -104,9 +136,12 @@ class GoogleContactsImportService
      */
     private static function addressBookFor(ExternalServices $service): AddressBooks
     {
+        // Owner, account and the source tag together identify the import address book (not the name alone)
         $addressBook = AddressBooks::withoutGlobalScopes()
             ->where('iam_user_id', $service->iam_user_id)
+            ->where('iam_account_id', $service->iam_account_id)
             ->where('name', self::ADDRESS_BOOK_NAME)
+            ->whereRaw('? = ANY(tags)', [self::SOURCE_TAG])
             ->first();
 
         if ($addressBook) {
@@ -137,6 +172,7 @@ class GoogleContactsImportService
 
             $exists = Contacts::withoutGlobalScopes()
                 ->where('iam_user_id', $service->iam_user_id)
+                ->where('iam_account_id', $service->iam_account_id)
                 ->whereRaw('lower(email) = ?', [$email])
                 ->exists();
 

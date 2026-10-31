@@ -37,6 +37,7 @@ class ContactsTransformer extends AbstractContactsTransformer
         $transformed['source'] = \NextDeveloper\Agenda\Database\Models\AddressBooks::withoutGlobalScopes()
             ->where('id', $model->agenda_address_book_id)
             ->where('name', \NextDeveloper\Agenda\Services\GoogleContactsImportService::ADDRESS_BOOK_NAME)
+            ->whereRaw('? = ANY(tags)', [\NextDeveloper\Agenda\Services\GoogleContactsImportService::SOURCE_TAG])
             ->exists() ? 'google' : null;
 
         Cache::set(
