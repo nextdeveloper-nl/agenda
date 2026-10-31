@@ -18,6 +18,24 @@ class ContactsQueryFilter extends AbstractQueryFilter
      */
     protected $builder;
 
+    /**
+     * Source of the contact: 'google' = imported from the user's Google account (lives in the "Google Contacts"
+     * address book). Combined with the role's account + user scope, only the user's own contacts are returned.
+     */
+    public function source($value)
+    {
+        if (strtolower($value) !== 'google') {
+            return $this->builder;
+        }
+
+        return $this->builder->whereIn(
+            'agenda_address_book_id',
+            \NextDeveloper\Agenda\Database\Models\AddressBooks::withoutGlobalScopes()
+                ->where('name', \NextDeveloper\Agenda\Services\GoogleContactsImportService::ADDRESS_BOOK_NAME)
+                ->select('id')
+        );
+    }
+
     public function name($value)
     {
         return $this->builder->where('name', 'like', '%' . $value . '%');

@@ -7,6 +7,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Log;
 use NextDeveloper\Agenda\Console\Commands\FetchCalendarsCommand;
 use NextDeveloper\Agenda\Console\Commands\FetchCalendarEventsCommand;
+use NextDeveloper\Agenda\Console\Commands\ImportGoogleContactsCommand;
 use NextDeveloper\Commons\AbstractServiceProvider;
 
 /**
@@ -138,6 +139,7 @@ class AgendaServiceProvider extends AbstractServiceProvider
                 [
                     FetchCalendarsCommand::class,
                     FetchCalendarEventsCommand::class,
+                    ImportGoogleContactsCommand::class,
                 ],
             );
         }
