@@ -187,7 +187,12 @@ class FetchCalendarsCommand extends Command
 
             Log::warning('[Agenda::Console/Command::Calendar fetch failed]', [
                 'iam_user_id' => $externalService->iam_user_id,
-                'error' => $e->getTraceAsString(),
+                'external_service_uuid' => $externalService->uuid,
+                'service_code' => $externalService->code,
+                // The Google error itself (it used to be missing: only the trace was logged)
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
