@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use NextDeveloper\Agenda\Services\GoogleDataRetentionService;
 use NextDeveloper\Commons\Database\Models\ExternalServices;
 use NextDeveloper\Commons\Helpers\GoogleWorkspaceHelper;
-use NextDeveloper\Commons\Services\ExternalServicesService;
 
 /**
  * Deletes the synced Google data of users who disconnected Google more than 30 days ago.
@@ -56,10 +55,14 @@ class PurgeDisconnectedGoogleDataCommand extends Command
 
             if (!$dryRun) {
                 // Marks this disconnect as handled so the job does not run again for it
-                $configuration                    = $service->fresh()->configuration ?? [];
+                // Saved on the row that is already loaded: ExternalServicesService::update() looks the row up through
+                // the authorization scope, which finds nothing in CLI/scheduler (no user context).
+                $fresh                            = $service->fresh();
+                $configuration                    = $fresh->configuration ?? [];
                 $configuration['data_deleted_at'] = now()->toISOString();
 
-                ExternalServicesService::update($service->uuid, ['configuration' => $configuration]);
+                $fresh->configuration = $configuration;
+                $fresh->saveQuietly();
             }
 
             $this->line("user {$service->iam_user_id}: events {$result['events']}, attendees {$result['attendees']}, contacts {$result['contacts']}, calendars {$result['calendars']}");
