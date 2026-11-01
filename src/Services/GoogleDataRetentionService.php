@@ -38,11 +38,11 @@ class GoogleDataRetentionService
     }
 
     /**
-     * Deletes everything synced from Google for one user: all events with their attendees and, optionally, the
+     * Deletes everything synced from Google for one user: all events with their attendees, the Google calendar rows and, optionally, the
      * imported contacts (the "Google Contacts" address book and its contacts). With $accountId (the scheduled
      * purge after a disconnect) only the data of that account is deleted.
      *
-     * @return array{events: int, attendees: int, contacts: int}
+     * @return array{events: int, attendees: int, contacts: int, calendars: int}
      */
     public static function purgeUser(int $userId, bool $includeContacts, bool $dryRun = false, ?int $accountId = null): array
     {
@@ -52,6 +52,14 @@ class GoogleDataRetentionService
         $result = self::deleteEvents($events, $dryRun, 'user ' . $userId);
 
         $result['contacts'] = $includeContacts ? self::purgeContacts($userId, $dryRun, $accountId) : 0;
+
+        // The Google calendar rows themselves (calendar names) go last, after their events and attendees
+        $calendars           = Calendars::withoutGlobalScopes()->withTrashed()->whereIn('id', self::googleCalendarIds($userId, $accountId));
+        $result['calendars'] = (clone $calendars)->count();
+
+        if (!$dryRun) {
+            $calendars->forceDelete();
+        }
 
         Log::info('[Agenda::GoogleDataRetention] User data deleted', ['iam_user_id' => $userId, 'dry_run' => $dryRun] + $result);
 
