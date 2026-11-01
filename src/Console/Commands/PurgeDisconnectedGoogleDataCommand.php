@@ -62,7 +62,7 @@ class PurgeDisconnectedGoogleDataCommand extends Command
                 ExternalServicesService::update($service->uuid, ['configuration' => $configuration]);
             }
 
-            $this->line("user {$service->iam_user_id}: events {$result['events']}, attendees {$result['attendees']}, contacts {$result['contacts']}");
+            $this->line("user {$service->iam_user_id}: events {$result['events']}, attendees {$result['attendees']}, contacts {$result['contacts']}, calendars {$result['calendars']}");
         }
 
         return self::SUCCESS;

@@ -28,7 +28,7 @@ class DeleteGoogleDataCommand extends Command
         $result = GoogleDataRetentionService::purgeUser($userId, (bool) $this->option('include-contacts'), (bool) $this->option('dry-run'));
 
         $this->info(($this->option('dry-run') ? 'Would delete' : 'Deleted')
-            . " events: {$result['events']}, attendees: {$result['attendees']}, contacts: {$result['contacts']} (user {$userId})");
+            . " events: {$result['events']}, attendees: {$result['attendees']}, contacts: {$result['contacts']}, calendars: {$result['calendars']} (user {$userId})");
 
         return self::SUCCESS;
     }
