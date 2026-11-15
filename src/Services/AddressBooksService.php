@@ -29,7 +29,10 @@ class AddressBooksService extends AbstractAddressBooksService
             ->paginate();
 
         if($addressBooks->count() === 0) {
-            AddressBooks::create([
+            // Fix: create through the Service (not the Model directly). The model insert had no iam_user_id /
+            // iam_account_id, so Postgres raised a NOT NULL violation and GET /agenda/address-books returned 500 for
+            // any account without an address book yet. The service fills both from the current user and account.
+            self::create([
                 'name'  =>  I18n::t('Global Address Book ')
             ]);
 
