@@ -33,12 +33,8 @@ class ContactsTransformer extends AbstractContactsTransformer
 
         $transformed = parent::transform($model);
 
-        // Where the contact came from: 'google' for the Google import address book, null otherwise
-        $transformed['source'] = \NextDeveloper\Agenda\Database\Models\AddressBooks::withoutGlobalScopes()
-            ->where('id', $model->agenda_address_book_id)
-            ->where('name', \NextDeveloper\Agenda\Services\GoogleContactsImportService::ADDRESS_BOOK_NAME)
-            ->whereRaw('? = ANY(tags)', [\NextDeveloper\Agenda\Services\GoogleContactsImportService::SOURCE_TAG])
-            ->exists() ? 'google' : null;
+        // Where the contact came from: 'google' / 'microsoft' for the import address books, null otherwise
+        $transformed['source'] = \NextDeveloper\Agenda\Services\ContactSources::sourceOf($model->agenda_address_book_id);
 
         Cache::set(
             CacheHelper::getKey('Contacts', $model->uuid, 'Transformed'),
